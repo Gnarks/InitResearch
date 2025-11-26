@@ -1,0 +1,108 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[english]{babel}
+\usepackage[pdftex]{graphicx}
+\usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
+\usepackage[T1]{fontenc}
+\usepackage{wrapfig}
+\usepackage{graphicx} 
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{minted}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{csquotes}
+\usepackage{biblatex} %Imports biblatex package
+\addbibresource{Citations.bib} %Import the bibliography file
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyphenat}
+\usepackage{siunitx}
+\usepackage{changepage}   % for the adjustwidth environment
+\usepackage[toc,page]{appendix}
+\usepackage[inkscapelatex=true]{svg}
+\usepackage{tabularx}
+
+\setlength {\marginparwidth }{2cm}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\usepackage{xargs}
+
+
+\hfuzz 40pt
+\newenvironment{tab}{\begin{adjustwidth}{1cm}{1cm} \itshape }{ \end{adjustwidth}}
+\newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
+\newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+\newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
+
+\begin{document}
+\begin{titlepage}
+\begin{center}
+{\Large University of Mons}\\[1ex]
+{\Large Sciences Faculty}\\[1ex]
+{\Large Computer Science Department}\\[2.5cm]
+
+\newcommand{\HRule}{\rule{\linewidth}{0.3mm}}
+% Title
+\HRule \\[0.3cm]
+{ \LARGE \bfseries Probabilistic Verification of Network Configuration \\[0.3cm]}
+{ \LARGE \bfseries Explanatory Report \\[0.1cm]} 
+\HRule \\[1.5cm]
+
+% Author and supervisor
+\begin{minipage}[t]{0.45\textwidth}
+\begin{flushleft} \large
+\emph{Supervisor :}\\
+Bruno \textsc{Quoitin}\\[3mm]
+\end{flushleft}
+\end{minipage}
+\begin{minipage}[t]{0.45\textwidth}
+\begin{flushright} \large
+\emph{Author :} \\
+Maxime \textsc{Bartha}\\
+\end{flushright}
+\end{minipage}\\[2ex]
+
+\vfill
+
+% Bottom of the page
+\begin{center}
+\begin{tabular}[t]{c c c}
+\includegraphics[height=1.5cm]{figures/logoumons.jpg} &
+\hspace{0.3cm} &
+\includegraphics[height=1.5cm]{figures/logofs.jpg}
+\end{tabular}
+\end{center}~\\
+ 
+{\large Academic Year 2025-2026}
+
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Intro}\label{sec:intro} % (fold)
+\section{Algorithms}\label{sec:algo} % (fold)
+
+% have a shared example Net Conf to improve over time 
+% if no time incorporate hand drawings
+
+% explain the algorithm [give it] 
+
+% without BGP at first 
+%Main algo without BGP
+
+% including BGP
+% incorporating BGP 
+
+% exploring ECMP
+% including ECMP
+
+\subsection{Examples}
+
+% section Intro (end)
+
+\end{document}
