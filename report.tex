@@ -23,6 +23,7 @@
 \usepackage[toc,page]{appendix}
 \usepackage[inkscapelatex=true]{svg}
 \usepackage{tabularx}
+\newtheorem{definition}{Definition} % to have definition environment
 
 \setlength {\marginparwidth }{2cm}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
@@ -85,7 +86,57 @@ Maxime \textsc{Bartha}\\
 \newpage
 
 \section{Intro}\label{sec:intro} % (fold)
-\section{Algorithms}\label{sec:algo} % (fold)
+
+\newpage
+
+\section{Probabilistic Verification of Network Configuration}\label{sec:algo} % (fold)
+% motivate the concept of soft properties beforehand
+% explain the notion of failing edges => will be done with ECMP
+In this section, We explore the implementation of NetDice \cite{steffen2020netdice}, a probabilistic verification tool for networks configuration. 
+The key insight of NetDice is, given a network configuration and a property $\phi$, to prune failure scenarios where links are guaranteed to have no impact on the state of $\phi$. 
+To this end, NetDice introduces the concept of cold edge. 
+
+\begin{definition} % should recall flow and forwarding graph
+  Given a network configuration and a property $\phi$ a flow $(u, d)$, and a set of edges $\mathcal{C} \subseteq E$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called if it belongs to $\mathcal{C}$ and hot else.
+\end{definition}
+
+In practice, only hot edges are used to prune the failure scenarios.
+Hot edges considering the shortest paths and static routes are presented in Alg.\ref{alg:cold}.
+All edges along the shortest path and the traversed static routes are hot as a failure in any of them would change if $\phi$ holds due to unreachability or changes in the forwarding graph.
+In addition, the algorithm considers the shortest path from every node traversed by the forwarding graph (set $\mathcal{D}$ Lin.2) and sets every traversed edges as hot (Lin.3). As even if the forwarding graph doesn't traverse the shortest path, it is still considered by the nodes, so any failure along it would change the shortest path.
+
+As an example, after the application of the algorithm on the example of Fig.\ref{fig:cold}, the E - C edge is marked as hot even thought it is not in the forwarding graph (in red arrows).
+
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[width=0.85\textwidth]{figures/ColdStatic.jpg}
+  \end{center}
+  \caption{Cold Edges in a network configuration. E - B is a static route. Blue and red highlight show cold and hot edges. The forwarding graph is represented by the red arrows }\label{fig:cold}
+\end{figure}
+
+
+
+
+\begin{algorithm}[t]
+  \floatname{algorithm}{Algorithm}
+  \caption{Hot edges for static routes and shortest path}\label{alg:cold}
+  \begin{algorithmic}[1]
+    \Procedure{HotSpStatic}{u, d, $E_{fwd}$, L}
+    \State $\mathcal{D} \leftarrow \{u\} ~ \cup ~ \{ y | (x,y) \in Static_d ~ \cap ~ E_{fwd} \}$
+    \State $\mathcal{H} \leftarrow AllSP(\mathcal{D}, \{d\}, L)$
+    \State \textbf{return} $\mathcal{H} ~ \cup ~ (Static_d, E_{fwd})$ 
+
+    % can comment with \Comment{}
+    \\
+    \Procedure{AllSP}{$\mathcal{S}, \mathcal{T}, \mathcal{L}$}
+    \State \textbf{return} $\bigcup_{s\in \mathcal{S}, t\in \mathcal{T}} SP_\mathcal{L}(s,t)$
+
+  \end{algorithmic}
+\end{algorithm}
+
+
+
 
 % have a shared example Net Conf to improve over time 
 % if no time incorporate hand drawings
@@ -101,7 +152,7 @@ Maxime \textsc{Bartha}\\
 % exploring ECMP
 % including ECMP
 
-\subsection{Examples}
+% \subsection{Examples}
 
 % git overleaf test sync
 
