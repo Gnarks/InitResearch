@@ -5,8 +5,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{wrapfig}
 \usepackage{graphicx} 
-\usepackage{algpseudocode}
-\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[noend]{algorithm}
 \usepackage{minted}
 \usepackage{verbatim}
 \usepackage{hyperref}
@@ -97,28 +97,28 @@ The key insight of NetDice is, given a network configuration and a property $\ph
 To this end, NetDice introduces the concept of cold edge. 
 
 \begin{definition} % should recall flow and forwarding graph
-  Given a network configuration and a property $\phi$ a flow $(u, d)$, and a set of edges $\mathcal{C} \subseteq E$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called if it belongs to $\mathcal{C}$ and hot else.
+  Given a network configuration and a property $\phi$ and a flow $(u, d)$, a set of edges $\mathcal{C} \subseteq E$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called cold if it belongs to $\mathcal{C}$ and hot else.
 \end{definition}
 
 In practice, only hot edges are used to prune the failure scenarios.
-Hot edges considering the shortest paths and static routes are presented in Alg.\ref{alg:cold}.
+An algorithm to compute hot edges considering the shortest paths and static routes is presented in Alg.\ref{alg:cold}.
 All edges along the shortest path and the traversed static routes are hot as a failure in any of them would change if $\phi$ holds due to unreachability or changes in the forwarding graph.
-In addition, the algorithm considers the shortest path from every node traversed by the forwarding graph (set $\mathcal{D}$ Lin.2) and sets every traversed edges as hot (Lin.3). As even if the forwarding graph doesn't traverse the shortest path, it is still considered by the nodes, so any failure along it would change the shortest path.
 
-As an example, after the application of the algorithm on the example of Fig.\ref{fig:cold}, the E - C edge is marked as hot even thought it is not in the forwarding graph (in red arrows).
+In addition, the algorithm considers the shortest path from every node traversed by the forwarding graph (set $\mathcal{D}$ Lin.2) and sets every traversed edges as hot (Lin.3). As even if the forwarding graph doesn't traverse the shortest path, as it is still considered by the nodes, any failure along it would change the shortest path.
+
+As an example, after the application of the algorithm on the example of Fig.\ref{fig:cold}, the E - C edge is marked as hot even thought it is not in the forwarding graph.
 
 
 \begin{figure}[ht]
   \begin{center}
-    \includegraphics[width=0.85\textwidth]{figures/ColdStatic.jpg}
+    \includegraphics[width=0.45\textwidth]{figures/ColdStatic.png}
   \end{center}
   \caption{Cold Edges in a network configuration. E - B is a static route. Blue and red highlight show cold and hot edges. The forwarding graph is represented by the red arrows }\label{fig:cold}
 \end{figure}
 
 
 
-
-\begin{algorithm}[t]
+\begin{algorithm}[ht]
   \floatname{algorithm}{Algorithm}
   \caption{Hot edges for static routes and shortest path}\label{alg:cold}
   \begin{algorithmic}[1]
@@ -126,15 +126,100 @@ As an example, after the application of the algorithm on the example of Fig.\ref
     \State $\mathcal{D} \leftarrow \{u\} ~ \cup ~ \{ y | (x,y) \in Static_d ~ \cap ~ E_{fwd} \}$
     \State $\mathcal{H} \leftarrow AllSP(\mathcal{D}, \{d\}, L)$
     \State \textbf{return} $\mathcal{H} ~ \cup ~ (Static_d, E_{fwd})$ 
+    \EndProcedure
 
     % can comment with \Comment{}
     \\
     \Procedure{AllSP}{$\mathcal{S}, \mathcal{T}, \mathcal{L}$}
     \State \textbf{return} $\bigcup_{s\in \mathcal{S}, t\in \mathcal{T}} SP_\mathcal{L}(s,t)$
+    \EndProcedure
 
   \end{algorithmic}
 \end{algorithm}
 
+
+\textbf{Computing P($\phi$)} is done by pruning the failure tree by only exploring failures of hot edges. 
+A simple probability function mapping each edge to a certain failure probability is considered here, more complex probability failure model are discussed in \ref{sec:ProbFailMod} 
+To this end, NetDice considers 3 possible states for an edge during the exploration process : 
+\begin{enumerate}
+  \item down : the edge cannot be traversed in current and future scenarios  
+  \item up : the edge can be traversed in current and future scenarios  
+  \item undefined : the edge is currently traversable but might not be in the future
+\end{enumerate}
+
+Those state are only considered during the exploration process. In terms of forwarding graph computation, within a certain scenario, down edges are not considered whereas up and undefined are considered usable. 
+
+It is assumed that a \textit{check} function returning, given a property and forwarding graph, if the property holds or not. % In practice it's implemented using variants of DFS 
+
+The exploration procedure can be described as follows : 
+\begin{enumerate}
+  \item initially, start with all edges as undefined as the scenario 
+  \item compute the forwarding graphs with respect to the failure scenario
+  \item compute the hot edges with $\phi$ and the forwarding graphs
+  \item within the hot edges find the undefined 
+  \item if $\phi$ holds in the failure scenario, compute the probability of it
+  \item explore recursively by setting undefined edges to down and up 
+  \item return the sum of all probabilities (from recursive calls and own if $\phi$ holds )
+\end{enumerate}
+
+In Pt.2, multiple forwarding graphs are possibly computed as equal-cost multi path (ECMP) is considered.
+  
+
+An example of execution on the network configuration from the Fig.\ref{fig:cold} with property $\phi$ "Traffic from D to C traverses E" is shown at Fig.\ref{fig:execTree}.
+In the example, only 16 failure scenarios are explored. In contrast to the $2^7 = 128$  scenarios a Brute Force algorithm would have had to explore.  
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[trim=0 12.6cm 0 0,clip, width=0.95\textwidth]{figures/execTreestat.pdf}
+  \end{center}
+  \caption{Execution Tree of the exploration of failure scenarios with property $\phi$"Traffic from D to C traverses E". Crosses represents down links, padlocks represents up links. Absence of symbol represents undefined links.}\label{fig:execTree}
+\end{figure}
+
+
+
+
+
+
+
+% Explain the overall procedure with bullet points withoutBGP (do proper algorithm only for BGP)
+
+
+
+% to put for BGP => 
+% \begin{algorithm}[t]
+%   \floatname{algorithm}{Algorithm}
+%   \caption{Failures exploration to compute $P(\phi)$ considering static routes and shortest path}\label{alg:withoutBGPExplo}
+%   \begin{algorithmic}[1]
+%     \Procedure{Explore}{s}
+%     \State $L \leftarrow fill(s)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
+%
+%     \For{each flow $(u_i, d_i) \in flows(\phi)$}  
+%     \State compute forwarding graph ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under L
+%
+%     \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ HotSpStatic(u_i,d_i, E^i_{fwd}, L)$
+%     \EndFor
+%     \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ \{ e | e \in E ~ \wedge ~ s(e) = ? \}$
+%
+%
+%     \If{Check($\phi$, $(V^1_{fwd},E^1_{fwd}), \dots ,(V^n_{fwd},E^n_{fwd})$)}
+%       \State $\rho \leftarrow \rho + prob(s[\mathcal{H}^? \leftarrow 1])$ 
+%     \EndIf
+%     \State $s' \leftarrow s$ 
+%
+%     \For{$l \in \mathcal{H}^?$}  
+%     \State $s' \leftarrow s'[l \leftarrow 0]$ 
+%
+%       \State $\rho \leftarrow \rho + Explore(s')$ 
+%       \State $s' \leftarrow s'[l \leftarrow 1]$ 
+%     \EndFor
+%
+%     \State \textbf{return} \rho
+%   \EndProcedure
+%   \end{algorithmic}
+% \end{algorithm}
+
+%todo 
+\label{sec:ProbFailMod}
 
 
 
@@ -152,10 +237,5 @@ As an example, after the application of the algorithm on the example of Fig.\ref
 % exploring ECMP
 % including ECMP
 
-% \subsection{Examples}
-
-% git overleaf test sync
-
-% section Intro (end)
 
 \end{document}
