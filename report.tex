@@ -23,14 +23,18 @@
 \usepackage[toc,page]{appendix}
 \usepackage[inkscapelatex=true]{svg}
 \usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{booktabs}
 \newtheorem{definition}{Definition} % to have definition environment
 
 \setlength {\marginparwidth }{2cm}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
 \usepackage{xargs}
-
+\renewcommand{\arraystretch}{1.4}
 
 \hfuzz 40pt
+\vfuzz 50pt
+\vbadness 500
 \newenvironment{tab}{\begin{adjustwidth}{1cm}{1cm} \itshape }{ \end{adjustwidth}}
 \newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
 \newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
@@ -90,47 +94,92 @@ Maxime \textsc{Bartha}\\
 \newpage
 
 \section{Probabilistic Verification of Network Configuration}\label{sec:algo} % (fold)
-% motivate the concept of soft properties beforehand
-% explain the notion of failing edges => will be done with ECMP
-In this section, We explore the implementation of NetDice \cite{steffen2020netdice}, a probabilistic verification tool for networks configuration. 
-It verifies property with respect to a single (e.g. reachability) or multiple flows (e.g. balanced loads). With a flow from $u$ to $d$ and a failure scenario $L$, a forwarding graph $(V_{fwd},E_{fwd})$ from $u$ to $d$ is considered instead of a simple path to be able to consider equal-cost multiple path routing.\\
-The key insight of NetDice is, given a network configuration and a property $\phi$, to prune failure scenarios where links are guaranteed to have no impact on the state of $\phi$. 
+% todo motivate the topic
+In this section, we explore the reasoning and implementation behind NetDice \cite{steffen2020netdice}, a probabilistic verification tool for networks configuration. 
+
+
+\begin{table}
+  \caption{Properties supported by NetDice}\label{tab:props}
+  \begin{center}
+    \begin{tabularx}{\textwidth}{c l X}
+
+      & \textbf{Property} & \textbf{Meaning} \\
+      \toprule
+      \multirow{4}{*}{\rotatebox[origin=c]{90}{Single-Flow}} & $Reach_{u\rightarrow d}$ & Reachability from source $u$ to destination $d$\\ 
+      & $Waypoint_{u\rightarrow d}(w)$ & Traffic from $u$ to $d$ traverses $w$ \\
+      & $Egress_{u\rightarrow d}(e)$ & Traffic from $u$ to $d$ leaves the network at $e$ \\
+      & $PathLenght_{u\rightarrow d}(l)$ & Traffic from $u$ to $d$ traverses $l$ links \\
+
+      \hline
+      \multirow{3}{*}[-1.3em]{\rotatebox[origin=c]{90}{Mutli-Flow}}
+      & $Balanced_{F}(\mathcal{L}, \Delta)$ & Under flows $F$ with given volumes, the load
+      on the links in $\mathcal{L}$ differs by at most $\Delta$ \\
+      & $Isolation_{F}$ & Set of flows in $F$ doesn't share any links \\
+      & $Congestion_{F}(l, t)$ & Together, all flows in $F$ with their volume don't exceed threshold $t$ for link $l$ \\
+    \end{tabularx}
+  \end{center}
+\end{table}
+It is able to verify properties on single or multiples flows with respect to certain nodes or links in a network.
+A flow in the context of internet routing is generally defined by a source and destination IP address, ports numbers and a transport protocol. 
+We use a simplification considering the source and destination IP addresses.
+Examples of properties and their meaning are represented in Table \ref{tab:props}.
+
+
+In NetDice, equal-cost multiple path routing (ECMP) is considered, hence a flow in a network can take multiples paths if they share the same cost. To represent such behavior, forwarding graphs, composed of $V_{fwd}$ a set of vertices (routers) and $E_{fwd}$ a set of directed edges (links), are used.
+Those forwarding graphs can be altered by link failures represented by a failure scenario which is a set of unusable links in the network configuration.   
+
+To compute the probability of a certain failure scenario, two mathematical tools are used :
+\begin{enumerate}
+  \item A vector $L$ of random variables $s.t.$ $L_e \in \{0,1\}$ for each link $e$ to represent if the link is up ($L_e = 1$) or down ($L_e = 0$) 
+  \item A probability mass function of link failure $P(L)$ 
+\end{enumerate}
+Such that, for a failure scenario represented by a vector $l$, its probability is defined by $P(L = l)$. This probability mass function is joint meaning it can represent complex relation between link failures, such as node failure (all incident links) or shared risks link group (SLRG) which are discussed in section \ref{sec:ProbFailMod}.
+
+
+% todo add a figure to show a failure scenario (simply the fig 1) without the cold and hot edges
+
+Given a network configuration, a property $\phi$ and a link failure distribution $L$, the goal of NetDice is to compute the probability of the property being satisfied.
+
+A naive approach could be to compute all possible failure scenarios and sum the probabilities of the scenarios for which the property holds.
+But the key insight of NetDice is to prune failure scenarios where links are guaranteed to have no impact on the state of $\phi$. 
 To this end, NetDice introduces the concept of cold edge. 
 
-\begin{definition} % should recall flow and forwarding graph
-  Given a network configuration, a property $\phi$ and a flow $(u, d)$, a set of edges $\mathcal{C} \subseteq E$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called cold if it belongs to $\mathcal{C}$ and hot else.
+\begin{definition}
+  Given a network configuration, a property $\phi$ and a flow $(u, d)$, a subset of edges $\mathcal{C}$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called cold if it belongs to $\mathcal{C}$ and hot otherwise.
 \end{definition}
 
-In practice, only hot edges are used to prune the failure scenarios.
-An algorithm to compute hot edges considering the shortest paths and static routes is presented in Alg.\ref{alg:cold}.\\
+In practice, hot edges are used to prune the exploration of the possible failure scenarios. Intuitively, as they impact the forwarding graph, we only explore failure scenarios where hot edges fail to avoid redundant scenarios due to the unchanged forwarding graphs.
+
+An algorithm to compute hot edges considering the shortest paths and static routes is presented in Alg.\ref{alg:cold}. It takes a flow $(u,d)$, a forwarding graph's edges $E_{fwd}$, a set of static routes $Static_d$ and a failure scenario $l$.\\
 All edges along the shortest path and the traversed static routes are hot as a failure in any of them would change if $\phi$ holds due to unreachability or changes in the forwarding graph.\\
-To this end, every edge along the shortest path from the source $u$ to the destination $d$ is considered hot (Lin.2). \\
-Then edges along the shortest path from every the end of a traversed static route are added as hot (Lin.4). As those static routes deviates the forwarding graph and the end node of a static route considers shortest path routing.\\
-Finally, every edge on traversed static route is added as hot (Lin.5). 
+To this end, every edge along the shortest path from the source $u$ to the destination $d$ is considered hot (Lin.2). As the shortest path is considered by $u$, any failure in this shortest path will impact the decision of the source node hence the resulting forwarding graph. \\
+Then edges along the shortest path from every end of a traversed static route are added as hot (Lin.4). As those static routes deviate the forwarding graph and the end node of a static route considers shortest path routing.\\
+Finally, every edge on traversed static route is added as hot (Lin.5).
+
+% todo explain its due to RIP that we consider sp at nodes 
 
 \begin{algorithm}[H]
   \floatname{algorithm}{Algorithm}
   \caption{Hot edges for static routes and shortest path}\label{alg:cold}
   \begin{algorithmic}[1]
-    \Procedure{HotSpStatic}{u, d, $E_{fwd}$, L}
-    \State $\mathcal{H} \leftarrow AllSP(\{u\}, \{d\}, L)$ \Comment{initial shortest path}
+    \Procedure{HotSpStatic}{u, d, $E_{fwd}$, $l$}
+    \State $\mathcal{H} \leftarrow AllSP(\{u\}, \{d\}, l)$ \Comment{initial shortest path}
     \State $\mathcal{S} \leftarrow \{ y ~ | ~ (x, y) \in Static_d ~ \cap ~ E_{fwd} \}$ \Comment{end nodes of static route}
 
-    \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ AllSP(\mathcal{S}, \{d\}, L)$ 
+    \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ AllSP(\mathcal{S}, \{d\}, l)$ 
     \State \textbf{return} $\mathcal{H} ~ \cup ~ (Static_d ~ \cap ~ E_{fwd})$ 
     \EndProcedure
 
-    % can comment with \Comment{}
     \\
-    \Procedure{AllSP}{$\mathcal{S}, \mathcal{T}, L$}
-    \State \textbf{return} $\bigcup_{s\in \mathcal{S}, t\in \mathcal{T}} SP_L(s,t)$
+    \Procedure{AllSP}{$\mathcal{S}, \mathcal{T}, l$}
+    \State \textbf{return} $\bigcup_{s\in \mathcal{S}, t\in \mathcal{T}} SP_l(s,t)$
     \EndProcedure
 
   \end{algorithmic}
 \end{algorithm}
 
-As an example, Figure \ref{fig:cold} represents the hot and cold edges of a certain network configuration considering no failure and a flow (D, C).
-Note that the E - C edge is marked as hot even thought it is not in the forwarding graph.
+As an example, Figure \ref{fig:cold} represents the hot and cold edges of a certain network configuration considering no failure and a flow (D, C), the forwarding edges $E_fwd = {(D-E),(E-B),(B-C)}$ and the static routes $Static_d = {(E-B)}$.
+Note that the E - C edge is marked as hot even though it is not in the forwarding graph because it lies on the shortest path of D. If the E-C link fails, the decision of D would be to use D-A-B-C as its shortest path, changing the forwarding graph.  
 
 \begin{figure}[H]
   \begin{center}
@@ -141,10 +190,10 @@ Note that the E - C edge is marked as hot even thought it is not in the forwardi
 
 
 
-
-
-\textbf{Computing P($\phi$)} is done by pruning the failure tree by only exploring failures of hot edges. 
+% todo ; not talk about failure tree or explain its judr the exploration of failure states 
+\textbf{Computing P($\phi$)}, intuitively, is done by only exploring possible failures of hot edges. 
 A simple probability function mapping each edge to a certain failure probability is considered here, more complex probability failure model are discussed in \ref{sec:ProbFailMod}. 
+Moreover, a full algorithm incorporating BGP is presented in Section \ref{sec:IncBGP}.
 To explore the failure space, NetDice considers 3 possible states for an edge during the exploration process : 
 \begin{enumerate}
   \item down : the edge cannot be traversed in current and future scenarios  
@@ -152,95 +201,76 @@ To explore the failure space, NetDice considers 3 possible states for an edge du
   \item undefined : the edge is currently traversable but might not be in the future
 \end{enumerate}
 
-Those state are only considered during the exploration process. In terms of forwarding graph computation, within a certain scenario, down edges are not considered whereas up and undefined are considered usable. 
-
-% It is assumed that a \textit{check} function returning, given a property and forwarding graph, if the property holds or not. % In practice it's implemented using variants of DFS 
+Those states are only considered during the exploration process. In terms of forwarding graph computation, within a certain scenario, down edges are not considered usable whereas up and undefined are considered usable. 
+It is assumed that a \textit{check} function returning, given a property and forwarding graphs, if the property holds in every forwarding graph or not.
+In practice, it is implemented using variants of DFS depending on the property to check. 
 
 The exploration procedure can be described as follows : 
 \begin{enumerate}
-  \item initially, start with all edges as undefined as the scenario 
+  \item[0.] initially, all edges are undefined (all traversable)
   \item compute the forwarding graphs with respect to the failure scenario
   \item compute the hot edges with $\phi$ and the forwarding graphs
-  \item within the hot edges find the undefined 
-  \item if $\phi$ holds in the failure scenario, compute the probability of it
-  \item explore recursively by setting undefined edges to down and up 
-  \item return the sum of all probabilities (from recursive calls and own if $\phi$ holds )
+  \item let $\mathcal{H}^?$ be the set of undefined hot edges
+  \item $\forall h \in \mathcal{H}^?$ make two recursive calls (going back to .1) : with $h$ up and $h$ down 
+  \item return the sum of the recursive calls and the probability of the actual scenario if $\phi$ holds in it
 \end{enumerate}
 
-In Pt.2, multiple forwarding graphs are possibly computed as equal-cost multi path (ECMP) is considered.
-  
+% todo explain that ECMP is discussed later on
+Recall that we, multiple forwarding graphs are possibly computed as equal-cost multi path (ECMP) is considered.
 
-An example of execution on the network configuration from the Figure \ref{fig:cold} with property $\phi$ "Traffic from D to C traverses E" is shown at Figure \ref{fig:execTree}.
+An example of execution on the network configuration from Figure \ref{fig:cold} with property $\phi$ "Traffic from D to C traverses E" is shown at Figure \ref{fig:execTree}. Only the exploration is shown, the probability of the properties could be computed easily considering marginal properties for edges to fail.
+As required, initially all edges are undefined, the hot edges set is computed and recursive calls are made for every hot edge. At the first recursive call (D ${-}\mkern-11mu{/}$ E), we remark that its first recursive call on (A - D) results in a scenario where C isn't reachable from D, meaning every edge is cold. This lead to a dead end in the exploration as no more hot edge is to mark as down.
+A similar situation happens in the last recursive calls, except it's due to a loop in the forwarding graph because E uses its static route and B tries to reach C by E as (B - C) is down.
+
 In the example, only 16 failure scenarios are explored. In contrast to the $2^7 = 128$  scenarios a Brute Force algorithm would have had to explore.
 
 \begin{figure}[H]
   \begin{center}
-    \includegraphics[trim=0 12.6cm 0 0,clip, width=0.95\textwidth]{figures/execTreestat.pdf}
+    \includegraphics[trim=0 12.6cm 0 0,clip, width=0.95\textwidth]{figures/ExplorationWithoutBGP.pdf}
   \end{center}
-  \caption{Execution Tree of the exploration of failure scenarios with property $\phi$"Traffic from D to C traverses E". Crosses represents down links, padlocks represents up links. Absence of symbol represents undefined links.}\label{fig:execTree}
+  \caption{Exploration of the failure space with $\phi$"Traffic from D to C traverses E". Crosses represents down links, padlocks represents up links. Absence of symbol represents undefined links. "Cold" in blue represents scenarios containing only cold edges (which stops the exploration).}\label{fig:execTree}
 \end{figure}
 
 
-
-
-
-
-
-% Explain the overall procedure with bullet points withoutBGP (do proper algorithm only for BGP)
-
-
+\subsection{Incorporating BGP} \label{sec:IncBGP}
 
 % to put for BGP => 
-% \begin{algorithm}[t]
-%   \floatname{algorithm}{Algorithm}
-%   \caption{Failures exploration to compute $P(\phi)$ considering static routes and shortest path}\label{alg:withoutBGPExplo}
-%   \begin{algorithmic}[1]
-%     \Procedure{Explore}{s}
-%     \State $L \leftarrow fill(s)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
-%
-%     \For{each flow $(u_i, d_i) \in flows(\phi)$}  
-%     \State compute forwarding graph ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under L
-%
-%     \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ HotSpStatic(u_i,d_i, E^i_{fwd}, L)$
-%     \EndFor
-%     \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ \{ e | e \in E ~ \wedge ~ s(e) = ? \}$
-%
-%
-%     \If{Check($\phi$, $(V^1_{fwd},E^1_{fwd}), \dots ,(V^n_{fwd},E^n_{fwd})$)}
-%       \State $\rho \leftarrow \rho + prob(s[\mathcal{H}^? \leftarrow 1])$ 
-%     \EndIf
-%     \State $s' \leftarrow s$ 
-%
-%     \For{$l \in \mathcal{H}^?$}  
-%     \State $s' \leftarrow s'[l \leftarrow 0]$ 
-%
-%       \State $\rho \leftarrow \rho + Explore(s')$ 
-%       \State $s' \leftarrow s'[l \leftarrow 1]$ 
-%     \EndFor
-%
-%     \State \textbf{return} \rho
-%   \EndProcedure
-%   \end{algorithmic}
-% \end{algorithm}
+\begin{algorithm}[t]
+  \floatname{algorithm}{Algorithm}
+  \caption{Failures exploration to compute $P(\phi)$ considering static routes and shortest path}\label{alg:BGPExplo}
+  \begin{algorithmic}[1]
+    \Procedure{Explore}{s}
+    \State $L \leftarrow fill(s)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
 
-%todo 
-\label{sec:ProbFailMod}
+    \For{each flow $(u_i, d_i) \in flows(\phi)$}  
+    \State compute forwarding graph ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under L
+
+    \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ HotSpStatic(u_i,d_i, E^i_{fwd}, L)$
+    \EndFor
+    \State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ \{ e | e \in E ~ \wedge ~ s(e) = ? \}$
 
 
+    \If{Check($\phi$, $(V^1_{fwd},E^1_{fwd}), \dots ,(V^n_{fwd},E^n_{fwd})$)}
+      \State $\rho \leftarrow \rho + prob(s[\mathcal{H}^? \leftarrow 1])$ 
+    \EndIf
+    \State $s' \leftarrow s$ 
 
-% have a shared example Net Conf to improve over time 
-% if no time incorporate hand drawings
+    \For{$l \in \mathcal{H}^?$}  
+    \State $s' \leftarrow s'[l \leftarrow 0]$ 
 
-% explain the algorithm [give it] 
+      \State $\rho \leftarrow \rho + Explore(s')$ 
+      \State $s' \leftarrow s'[l \leftarrow 1]$ 
+    \EndFor
 
-% without BGP at first 
-%Main algo without BGP
+    \State \textbf{return} $\rho$
+  \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
 
-% including BGP
-% incorporating BGP 
+\subsection{Complex Link Failure Probability model} \label{sec:ProbFailMod}
+% talk about slrg and stuff 
 
-% exploring ECMP
-% including ECMP
+\printbibliography
 
 
 \end{document}
