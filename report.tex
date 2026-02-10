@@ -190,7 +190,6 @@ Note that the E - C edge is marked as hot even though it is not in the forwardin
 
 
 
-% todo ; not talk about failure tree or explain its judr the exploration of failure states 
 \textbf{Computing P($\phi$)}, intuitively, is done by only exploring possible failures of hot edges. 
 A simple probability function mapping each edge to a certain failure probability is considered here, more complex probability failure model are discussed in \ref{sec:ProbFailMod}. 
 Moreover, a full algorithm incorporating BGP is presented in Section \ref{sec:IncBGP}.
@@ -215,7 +214,6 @@ The exploration procedure can be described as follows :
   \item return the sum of the recursive calls and the probability of the actual scenario if $\phi$ holds in it
 \end{enumerate}
 
-% todo explain that ECMP is discussed later on
 Recall that we, multiple forwarding graphs are possibly computed as equal-cost multi path (ECMP) is considered.
 
 An example of execution on the network configuration from Figure \ref{fig:cold} with property $\phi$ "Traffic from D to C traverses E" is shown at Figure \ref{fig:execTree}. Only the exploration is shown, the probability of the properties could be computed easily considering marginal properties for edges to fail.
@@ -233,6 +231,8 @@ In the example, only 16 failure scenarios are explored. In contrast to the $2^7 
 
 
 \subsection{Incorporating BGP} \label{sec:IncBGP}
+
+%todo : read the article then explain how to improve the last model with bgp
 
 % to put for BGP => 
 \begin{algorithm}[t]
@@ -269,6 +269,9 @@ In the example, only 16 failure scenarios are explored. In contrast to the $2^7 
 
 \subsection{Complex Link Failure Probability model} \label{sec:ProbFailMod}
 % talk about slrg and stuff 
+
+\subsection{Results} 
+% talk about the results achieved by the paper
 
 \printbibliography
 
