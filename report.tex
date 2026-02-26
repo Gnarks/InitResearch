@@ -291,7 +291,32 @@ In addition, the forwarding graph $E_{fwd}$ can deviate if two successive nodes 
 Remark that, contrary to static traversed routes, the edge of the two successive nodes with different selected next-hops isn't manually marked hot, as it lies on the shortest path of the first node.\\  
 Finally, the edge case where no route reflectors are reachable by $u$ is handled (Lin.12-13). In this case, the connectivity from $u$ towards every border router is required. So every shortest path from $u$ towards them is considered hot.\\
 The first property (i) is ensured by considering shortest paths. 
-The second one is ensured because the lines 5 to 10 makes sure of the connectivity in the case of at least one route reflector in $X$. Where the lines 11 and 12 take care of the case where no route reflector lies in $X$.  
+The second one is ensured because the lines 5 to 10 makes sure of the connectivity in the case of at least one route reflector in $X$. Where the lines 11 and 12 take care of the case where no route reflector lies in $X$.
+
+An example of the algorithm can be found in Figure \ref{fig:hotbgp}. The route reflectors are V and W with respectively \{E, D, C, B, W\} and \{F, B, H, V\} as their client. The Border routers are E, A and C.
+After the BGP simulation, the forwarding graph is $B \rightarrow C \rightarrow V \rightarrow E$.
+Notice that the B packages leave the network at E and not at A which is B's selected next-hop. This is due to B's shortest path to A ($B \rightarrow C \rightarrow F \rightarrow W \rightarrow A$) which traverses C whose next-hop is E, rerouting B's origin forwarding plan to leave the network at E.
+
+
+Initially, lines 2-5 gives us $\mathcal{H} = {(E-V), (V-W), (W-A)}$ to ensure the connectivity between the border routers and the route reflectors (represented in (iia) in Figure \ref{fig:hotbgp}).
+Then  the shortest path from B towards its selected next-hop is added (line 6) to ensure that the forwarding graph doesn't change due to increased IGP cost towards A. This adds ${(B-C), (C-F), (F-W), (W-A)}$ to the hot edges set.
+There is no static route, so the seventh line doesn't change $\mathcal{H}$.
+In line 8, we have that C (and E) is added to $D_{\text{NH}}$ as in the forwarding graph the (B, C) is used where B and C have different next-hops.
+The shortest path of C (and E) towards its next-hop is added (for IGP cost reliability) to the hot edges. 
+Considering the added shortest path gives us the addition of the hot edges represented in Figure \ref{fig:hotbgp} (iib) giving us, in addition to the previously in Figure \ref{fig:hotbgp} (iib) the final set $\mathcal{H} = {(E-V), (V-W), (W-A), (V-C), (C-F), (B-C), (F-W)}$.
+
+\unsure[inline]{the example is added a bit in the rush, some adjustments might be necessary}
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[trim=4cm 0cm 0 0,clip, angle=90,width=0.95\textwidth]{figures/HotBgp.pdf}
+  \end{center}
+  \caption{Exploration of the failure space with $\phi$"Traffic from D to C traverses E". Crosses represents down links, padlocks represents up links. Absence of symbol represents undefined links. "Cold" in blue represents scenarios containing only cold edges (which stops the exploration).}\label{fig:hotbgp}
+\end{figure}
+
+
+
+
 
 \begin{algorithm}[H]
   \floatname{algorithm}{Algorithm}
