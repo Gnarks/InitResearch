@@ -136,7 +136,10 @@ To compute the probability of a certain failure scenario, two mathematical tools
   \item A vector $L$ of random variables $s.t.$ $L_e \in \{0,1\}$ for each link $e$ to represent if the link is up ($L_e = 1$) or down ($L_e = 0$) 
   \item A probability mass function of link failure $P(L)$ 
 \end{enumerate}
-Such that, for a failure scenario represented by a vector $l$, its probability is defined by $P(L = l)$. This probability mass function is joint meaning it can represent complex relation between link failures, such as node failure (all incident links) or shared risk link group (SLRG) which are discussed in section \ref{sec:ProbFailMod}.
+Such that, for a failure scenario represented by a vector $l$ assigning every link to up or down, its probability is defined by $P(L = l)$.
+Meaning this probability mass function represents link failures. A simple distribution assigning to each link $e \in E$ a probability to fail independently resulting in $P(L = l) = \prod_{e \in E} P(L_e = l_e)$ is considered in this section. 
+
+A probabilistic model to represent complex relation between link failures, such as node failure (all incident links) or shared risk link group (SLRG) is presented in section \ref{sec:ProbFailMod}.
 
 
 % todo add a figure to show a failure scenario (simply the fig 1) without the cold and hot edges
@@ -257,7 +260,7 @@ In the example, only 16 failure scenarios are explored. In contrast to the $2^7 
 		\centering
 	\begin{subfigure}[t]{0.85\textwidth}
 		\centering
-    \includegraphics[trim=0 12.6cm 0 0,clip, width=0.8\textwidth]{figures/ExplorationWithoutBGP.pdf}
+    \includegraphics[angle=90,width=0.95\textwidth]{figures/ExplorationWithoutBGP.pdf}
 	\end{subfigure}
 	\begin{subfigure}[b]{\textwidth}
 		\centering
@@ -329,41 +332,35 @@ The set of network border routers, route reflectors and external BGP nodes are r
 The algorithm to compute the set of hot edges considering a certain failure scenario $l$, a flow $(u, d)$ and the forwarding graph $E_{fwd}$ is presented in	Alg.\ref{alg.hotbgp}.
 
 To reduce computation costs, only the set of nodes $X$ reachable with IGP by $u$ is considered (Lin.2).
-
-The algorithm uses the $\textnormal{ALLSP}$  from Definition \ref{def:allsp} and $\textnormal{TOP3}$ which returns, for a certain destination, the border routers announcing routes of with the same highest preference in the three first rules in the BGP decision process at Table \ref{tab:bgprocess} considering the subset of nodes $X$. It is used to filter out of the computation the border routers whose announcement won't be selected as the three first rules are global. 
+The algorithm uses the $\textnormal{ALLSP}$  from Definition \ref{def:allsp} and $\textnormal{TOP3}$ which returns, for a certain destination, the border routers announcing routes of with the same highest preference in the three first rules in the BGP decision process at Table \ref{tab:bgprocess} considering the subset of nodes $X$. It is used to filter out of the computation the border routers whose announcement won't be selected as the three first rules are global for a fixed BGP destination. 
 Its reasoning is similar to Alg.\ref{alg:cold} with the addition of the consideration for the connectivity and unchanged IGP cost properties.
 To make sure that all the route reflectors receive the announcements of the border routers, the edges along all the shortest paths between every route reflector and border router is marked hot (Lin.3-5).
-As in the first algorithm, we need to mark as hot the edges along the shortest paths, towards their selected next-hop, of $u$ and the end-nodes of traversed static routes (Lin.6-7).
-In addition, the forwarding graph $E_{fwd}$ can deviate if two successive nodes along it differ in selected next-hop. As the shortest path of the first might not match the shortest path of the second as their selected next-hop differs. To take this deviation into account, the edges along the shortest path of the second node towards its selected next-hop are marked as hot.
+As in the first algorithm, we need to mark as hot the edges along the shortest paths of $u$ and the end-nodes of traversed static routes towards their selected next-hop(Lin.6-7).
+In addition, the forwarding graph $E_{fwd}$ can deviate if two successive nodes along it differ in selected next-hop. As the shortest path of the first might not match the shortest path of the second as their selected next-hop may differ. To take this deviation into account, the edges along the shortest path of the second node towards its selected next-hop are marked as hot.
 Remark that, contrary to static traversed routes, the edge of the two successive nodes with different selected next-hops isn't manually marked hot, as it lies on the shortest path of the first node.
 Finally, the edge case where no route reflectors are reachable by $u$ is handled (Lin.12-13). In this case, the connectivity from $u$ towards every border router is required. So every shortest path from $u$ towards them is considered hot.
 The first property (i) is ensured by considering shortest paths. 
-The second one is ensured because the lines 5 to 10 makes sure of the connectivity in the case of at least one route reflector in $X$. Where the lines 11 and 12 take care of the case where no route reflector lies in $X$.
+The second one is ensured because lines 5 to 10 make sure of the connectivity in the case of at least one route reflector in $X$. Where the lines 11 and 12 take care of the case where no route reflector lies in $X$.
 
 An example of the algorithm can be found in Figure \ref{fig:hotbgp}. The route reflectors are V and W with respectively \{E, D, C, B, W\} and \{F, B, H, V\} as their clients. The Border routers are E, A and C. There are no static routes and the flow is (B, E).
 After the BGP simulation, the forwarding graph is $B \rightarrow C \rightarrow V \rightarrow E$.
 Notice that the B packets leave the network at E and not at A which is B's selected next-hop. This is due to B's shortest path to A ($B \rightarrow C \rightarrow F \rightarrow W \rightarrow A$) which traverses C whose next-hop is E, rerouting B's origin forwarding plan to leave the network at E.
 
 
-Initially, lines 2-5 gives us $\mathcal{H} = {(E-V), (V-W), (W-A)}$ to ensure the connectivity between the border routers and the route reflectors (represented in (iia) in Figure \ref{fig:hotbgp}).
-Then  the shortest path from B towards its selected next-hop is added (line 6) to ensure that the forwarding graph doesn't change due to increased IGP cost towards A. This adds ${(B-C), (C-F), (F-W), (W-A)}$ to the hot edges set.
+Initially, lines 2-5 gives $\mathcal{H} = {(E,V), (V,W), (W,A)}$ to ensure the connectivity between the border routers and the route reflectors (represented in  Figure \ref{fig:hotbgp}(iia)).
+Then the Figure \ref{fig:hotbgp}(iib) represents the union of the added hot edges from line 6 to 10. It ensures that every edges that could make the IGP cost change is marked as hot.
+The shortest path from B towards its selected next-hop is added in line 6 to ensure not change in IGP cost towards A. This adds ${(B,C), (C,F), (F,W), (W,A)}$ to the set of hot edges.
 There is no static route, so the seventh line doesn't change $\mathcal{H}$.
-In line 8, we have that C (and E) is added to $D_{\text{NH}}$ as in the forwarding graph the (B, C) is used where B and C have different next-hops.
-The shortest path of C (and E) towards its next-hop is added (for IGP cost reliability) to the hot edges. 
-Considering the added shortest path gives us the addition of the hot edges represented in Figure \ref{fig:hotbgp} (iib) giving us, in addition to the previously in Figure \ref{fig:hotbgp} (iib) the final set $\mathcal{H} = {(E-V), (V-W), (W-A), (V-C), (C-F), (B-C), (F-W)}$.
-
-\unsure[inline]{the example is added a bit in the rush, some adjustments might be necessary}
+In line 8, we have that C (and E) is added to $D_{\text{NH}}$ as  (B, C) lies on the forwarding graph and both nodes have different next-hop.
+Lines 9 to 10 marks hot the edges along the shortest path of C towards E, adding ${(C,V), (V,E)}$ to the set of hot edges.
+The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(iib) and (iia) resulting in $\mathcal{H} = {(V,E), (V,W), (W,A), (C,V), (C,F), (B,C), (F,W)}$ represented in Figure \ref{fig:hotbgp} (iii)
 
 \begin{figure}[H]
   \begin{center}
     \includegraphics[trim=4cm 0cm 0 0,clip, angle=90,width=0.95\textwidth]{figures/HotBgp.pdf}
   \end{center}
-  \caption{Exploration of the failure space with $\phi$"Traffic from D to C traverses E". Crosses represents down links, padlocks represents up links. Absence of symbol represents undefined links. "Cold" in blue represents scenarios containing only cold edges (which stops the exploration).}\label{fig:hotbgp}
+	\caption{Computation of hot edges in a BGP capable network configuration.  The flow is $(B,d)$ with d the external BGP destination, LP represents the local preference of the announcements towards d. $B_R = {E,A,C}$, $R_R = {V,W}$ represented in purple, the selected next-hop is represented in green at each node. Hot edges are highlighted in red.}\label{fig:hotbgp}
 \end{figure}
-
-
-
-
 
 \begin{algorithm}[H]
   \floatname{algorithm}{Algorithm}
