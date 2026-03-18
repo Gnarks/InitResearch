@@ -1,28 +1,29 @@
 \documentclass[a4paper, 12pt]{article}
-\usepackage[english]{babel}
-\usepackage[pdftex]{graphicx}
+\usepackage[english]{babel} % defines the language
+\usepackage[pdftex]{graphicx} % figures
 \usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
-\usepackage[T1]{fontenc}
-\usepackage{wrapfig}
-\usepackage{graphicx} 
-\usepackage[noend]{algpseudocode}
-\usepackage[noend]{algorithm}
-\usepackage{minted}
-\usepackage{verbatim}
-\usepackage{hyperref}
-\usepackage{csquotes}
+\usepackage[T1]{fontenc} %fonts
+\usepackage{wrapfig} % figures 
+\usepackage[noend]{algpseudocode}% adds the algorithm environment
+\usepackage[noend]{algorithm} % adds the algorithm environment
+\usepackage{minted} % code highlighting in \minted environment  
+\usepackage{verbatim} % adds the todo, unsure, change, info, improvement commands
+\usepackage{hyperref} % for hyperlinks
+\usepackage{csquotes} % some quotes need it 
 \usepackage{biblatex} %Imports biblatex package
 \addbibresource{Citations.bib} %Import the bibliography file
-\usepackage{amssymb}
-\usepackage{tikz}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{hyphenat}
-\usepackage{siunitx}
-\usepackage{changepage}   % for the adjustwidth environment
+\usepackage{amssymb} % math fonts 
+\usepackage{tikz} % tikz  
+\usetikzlibrary{positioning} % tikz library
+
+\usepackage{caption} % adds the caption command
+\usepackage{subcaption} % adds the subfigures
+\usepackage{hyphenat} % concatenates hyphenated words to a single one e.g. well-known 
+\usepackage{siunitx} % adds the \qty{n}{unit} and \unit{unit} commands
+\usepackage{changepage} % for the adjustwidth environment
 \usepackage[toc,page]{appendix}
-\usepackage[inkscapelatex=true]{svg}
-\usepackage{tabularx}
+\usepackage[inkscapelatex=true]{svg} % to include svgs in figures with \includesvg 
+\usepackage{tabularx} % a cleaner tabular with X parameter  
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{enumerate}
@@ -44,13 +45,15 @@
 \newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
 \newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
 
+% for tikz graphics
+\definecolor{lavander}{cmyk}{0 ,0.48 ,0 ,0}
+
 \begin{document}
 \begin{titlepage}
 \begin{center}
 {\Large University of Mons}\\[1ex]
 {\Large Sciences Faculty}\\[1ex]
 {\Large Computer Science Department}\\[2.5cm]
-
 \newcommand{\HRule}{\rule{\linewidth}{0.3mm}}
 % Title
 \HRule \\[0.3cm]
@@ -171,7 +174,6 @@ To compute the edges along the shortest path we define two algorithms :
 
 The algorithm starts by considering hot every edge along the shortest paths, considering the failure scenario $l$, from the source $u$ to the destination $d$(Lin.2).
 As the shortest path is considered by $u$, any failure in this shortest path will impact the decision of the source node hence the resulting forwarding graph. It holds even if the initially shortest path does not correspond to the final forwarding graph, as static routes can deviate the routing behavior. 
-Then edges along the shortest path from every end of a traversed static route are added as hot (Lin.4),
 as those static routes deviate the forwarding graph and the end-node considers the shortest path just as $u$ initially.
 Finally, every edge on traversed static route is added as hot (Lin.5), as a failure would clearly change the forwarding behavior.
 
@@ -395,7 +397,7 @@ The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(ii
 % to put for BGP => alg of expl
 % \begin{algorithm}[t]
 %   \floatname{algorithm}{Algorithm}
-%   \caption{Failures exploration to compute $P(\phi)$ considering static routes and shortest path}\label{alg:BGPExplo}
+%   \caption{Failures exploration to compute $P(\phi)$}\label{alg:BGPExplo}
 %   \begin{algorithmic}[1]
 %     \Procedure{Explore}{s}
 %     \State $L \leftarrow fill(s)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
@@ -428,7 +430,64 @@ The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(ii
 % \end{algorithm}
 
 \subsection{Complex Link Failure Probability model} \label{sec:ProbFailMod}
-% talk about slrg and stuff 
+This section explains the method to represent the distribution $P(L)$ with Bayesian Networks.  
+
+Because NetDice uses link failure as the baseline for its internal logic, more complex failure models need to be represented by dependencies amongst link failures. For example, a router failure can be modeled by the failure of all its incident links. 
+Similarly, to represent a group of link sharing the same physical resource (shared link risk group or SRLG) failure is modeled by the failure of the links in the group. 
+
+To model such relations, Similarly to other works \cite{BN1,BN2}, NetDice uses Bayesian Networks (BN) to represent the distribution $P(L)$. 
+
+A Bayesian network is a directed acyclic graph whose nodes are random variables and edges represent probabilistic dependencies amongst the variables. Hence, each node is associated a conditional probability given its parents.    
+
+In the case of NetDice, BN variables are binary variables where the value 0 represents failure and 1 the absence of it. To each link is therefore associated a BN variable to represent its potential state. Other variables can be added to represent node or SRLG failures.  
+
+The motivation of BN to model the distribution is to have a very general and intuitive model. It is intuitive by its visual representation in a graph and general because it can represent any discrete probability distribution with arbitrary dependencies. In fact, by the chain rule, any joint discrete probability distribution can be decomposed without loss of generality to a product of conditional distribution which a BN models.
+
+Figure \ref{fig:BN} represents a network configuration with a BN modeling node failures and a SRLG.
+Assuming the probability of a node (resp. link) failure is 0.1 (resp. 0.01) and 0.2 for the SRLG failure (the X node in the BN), it is possible to compute $P(L = l)$ for a certain failure scenario l. 
+To do so :
+\todo[inline]{put the computation}
+
+
+To compute $P(L)$ efficiently, NetDice uses the algorithm of variable elimination \cite{VE}.
+
+
+
+\begin{figure}
+	\begin{subfigure}[l]{0.35\textwidth}
+		\centering
+		\begin{tikzpicture}[auto, on grid, thick, state/.style={circle, draw=black, minimum width = 1cm}]
+			\matrix [ column sep=0.6cm , row sep=1cm ]
+			 {
+				 & \node[state](A) {A}; & \\
+				\node[state](B) {B}; & & \node[state](C) {C};\\
+			 };
+			 \path(A) edge node {} (B);
+			\path(A) edge node {} (C);
+		 \end{tikzpicture}
+	\end{subfigure}
+	\begin{subfigure}[r]{0.6\textwidth}
+		\centering
+		\begin{tikzpicture}[-latex , auto,  on grid, semithick, state/.style={circle, fill=blue!20, draw=black}]
+			\matrix [ column sep=1cm , row sep=1cm]
+			 {
+				 \node[state](A) {A};& \node[state](B) {B}; &  \node[state](X) {X}; &\node[state](C) {C}; \\
+					& \node[state](AB) {$A-B$}; & \node[state](BC) {$B-C$}; & \\
+			 };
+			\path(A) edge [bend right=10] node {} (AB);
+			\path(B) edge [bend left=10] node {} (BC);
+			\path(B) edge [] node {} (AB);
+			\path(C) edge [bend left=10] node {} (BC);
+			\path(X) edge [] node {} (BC);
+			\path(X) edge [bend right=10] node {} (AB);
+		 \end{tikzpicture}
+	\end{subfigure}
+
+	\caption{}\label{fig:BN}
+\end{figure}
+
+
+
 
 \subsection{Results} 
 % talk about the results achieved by the paper
