@@ -8,9 +8,10 @@
 	address = {New York, NY, USA},
 	url = {https://doi.org/10.1145/3387514.3405900},
 	doi = {10.1145/3387514.3405900},
-	booktitle = {Proceedings of the Annual Conference of the ACM Special Interest
-	             Group on Data Communication on the Applications, Technologies,
-	             Architectures, and Protocols for Computer Communication},
+	booktitle = {Proceedings of the Annual Conference of the ACM Special
+	             Interest Group on Data Communication on the Applications,
+	             Technologies, Architectures, and Protocols for Computer
+	             Communication},
 	pages = {750–764},
 	numpages = {15},
 	location = {Virtual Event, USA},
@@ -47,21 +48,21 @@
 	year = 2006,
 	month = apr,
 	abstract = {The Border Gateway Protocol (BGP) is an inter-autonomous system
-	            routing protocol designed for TCP/IP internets. Typically, all BGP
-	            speakers within a single AS must be fully meshed so that any
+	            routing protocol designed for TCP/IP internets. Typically, all
+	            BGP speakers within a single AS must be fully meshed so that any
 	            external routing information must be re-distributed to all other
 	            routers within that Autonomous System (AS). This represents a
-	            serious scaling problem that has been well documented with several
-	            alternatives proposed. This document describes the use and design
-	            of a method known as "route reflection" to alleviate the need for "
-	            full mesh" Internal BGP (IBGP). This document obsoletes RFC 2796
-	            and RFC 1966. {[}STANDARDS-TRACK{]}},
+	            serious scaling problem that has been well documented with
+	            several alternatives proposed. This document describes the use
+	            and design of a method known as "route reflection" to alleviate
+	            the need for " full mesh" Internal BGP (IBGP). This document
+	            obsoletes RFC 2796 and RFC 1966. {[}STANDARDS-TRACK{]}},
 }
 @article{BN1,
 	title = {End-to-end service failure diagnosis using belief networks},
 	author = {Malgorzata Steinder and Adarshpal S. Sethi},
-	journal = {NOMS 2002. IEEE/IFIP Network Operations and Management Symposium. '
-	           Management Solutions for the New Communications World'(Cat.
+	journal = {NOMS 2002. IEEE/IFIP Network Operations and Management Symposium.
+	           ' Management Solutions for the New Communications World'(Cat.
 	           No.02CH37327)},
 	year = {2002},
 	pages = {375-390},
@@ -73,8 +74,8 @@
 	year = {2002},
 	month = {02},
 	pages = {322 - 331 vol.1},
-	title = {Increasing robustness of fault localization through analysis of lost,
-	         spurious, and positive symptoms},
+	title = {Increasing robustness of fault localization through analysis of
+	         lost, spurious, and positive symptoms},
 	volume = {1},
 	isbn = {0-7803-7476-2},
 	journal = {Proceedings - IEEE INFOCOM},
@@ -90,5 +91,126 @@
 	timestamp = {Fri, 10 Jan 2020 12:58:38 +0100},
 	biburl = {https://dblp.org/rec/journals/corr/cs-AI-9612101.bib},
 	bibsource = {dblp computer science bibliography, https://dblp.org},
+}
+
+@inproceedings{NetPowProp,
+	author = {R\"{o}llin, Lukas and Jacob, Romain and Vanbever, Laurent},
+	title = {It Is Time to Address Network Power Proportionality},
+	year = {2025},
+	isbn = {9798400722806},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	url = {https://doi.org/10.1145/3772356.3772382},
+	doi = {10.1145/3772356.3772382},
+	abstract = {In recent years, networking hardware development has primarily
+	            focused on speed rather than power efficiency. By contrast,
+	            computing hardware has received a lot more attention given its
+	            dominant power footprint, especially in machine-learning (ML)
+	            data centers. With faster networks, we spend less time
+	            communicating and get more useful work out of the (increasingly
+	            expensive) computing hardware. But, the faster the network, the
+	            more time it idles and the worse its energy efficiency, which is
+	            magnified by the notorious lack of power proportionality of
+	            networking equipment.In this paper, we analyze the network power
+	            footprint in a production ML cluster and find that it accounts
+	            for a still sizeable fraction of the total (12\%) and that, by
+	            improving network power proportionality to match that of the
+	            compute, one could save close to 9\% of the overall cluster
+	            energy demand. We argue that this potential is worth
+	            investigating and discuss opportunities and challenges to address
+	            power proportionality in networking hardware, which we invite the
+	            networking research community to tackle.},
+	booktitle = {Proceedings of the 24th ACM Workshop on Hot Topics in Networks},
+	pages = {308–316},
+	numpages = {9},
+	keywords = {sustainable networking, power proportionality, machine learning
+	            infrastructure},
+	location = {UMD Campus, College Park, MD, USA},
+	series = {HotNets '25},
+}
+
+@inproceedings{MLCluster,
+	author = {Qian, Kun and Xi, Yongqing and Cao, Jiamin and Gao, Jiaqi and Xu,
+	          Yichi and Guan, Yu and Fu, Binzhang and Shi, Xuemei and Zhu, Fangbo
+	          and Miao, Rui and Wang, Chao and Wang, Peng and Zhang, Pengcheng
+	          and Zeng, Xianlong and Ruan, Eddie and Yao, Zhiping and Zhai, Ennan
+	          and Cai, Dennis},
+	title = {Alibaba HPN: A Data Center Network for Large Language Model
+	         Training},
+	year = {2024},
+	isbn = {9798400706141},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	url = {https://doi.org/10.1145/3651890.3672265},
+	doi = {10.1145/3651890.3672265},
+	abstract = {This paper presents HPN, Alibaba Cloud's data center network for
+	            large language model (LLM) training. Due to the differences
+	            between LLMs and general cloud computing (e.g., in terms of
+	            traffic patterns and fault tolerance), traditional data center
+	            networks are not well-suited for LLM training. LLM training
+	            produces a small number of periodic, bursty flows (e.g., 400Gbps)
+	            on each host. This characteristic of LLM training predisposes
+	            Equal-Cost Multi-Path (ECMP) to hash polarization, causing issues
+	            such as uneven traffic distribution. HPN introduces a 2-tier,
+	            dual-plane architecture capable of interconnecting 15K GPUs
+	            within one Pod, typically accommodated by the traditional 3-tier
+	            Clos architecture. Such a new architecture design not only avoids
+	            hash polarization but also greatly reduces the search space for
+	            path selection. Another challenge in LLM training is that its
+	            requirement for GPUs to complete iterations in synchronization
+	            makes it more sensitive to singlepoint failure (typically
+	            occurring on ToR). HPN proposes a new dual-ToR design to replace
+	            the single-ToR in traditional data center networks. HPN has been
+	            deployed in our production for more than eight months. We share
+	            our experience in designing, and building HPN, as well as the
+	            operational lessons of HPN in production.},
+	booktitle = {Proceedings of the ACM SIGCOMM 2024 Conference},
+	pages = {691–706},
+	numpages = {16},
+	keywords = {network architecture, AI infrastructure, large language model,
+	            model training, data center networks},
+	location = {Sydney, NSW, Australia},
+	series = {ACM SIGCOMM '24},
+}
+
+@misc{Demy,
+	author = {packetpushers.net},
+	title = {{D}emystifying {D}{C}{N} {T}opologies: {C}los/{F}at {T}rees - {P}
+	         art2 --- packetpushers.net},
+	howpublished = {\url{
+	                https://packetpushers.net/blog/demystifying-dcn-topologies-clos-fat-trees-part2/
+	                }},
+	year = {},
+	note = {[Accessed 06-04-2026]},
+}
+
+@inbook{ComputePowProp,
+	author = "Barroso, Luiz Andr{\'e} and H{\"o}lzle, Urs and Ranganathan,
+	          Parthasarathy",
+	title = "Energy and Power Efficiency",
+	bookTitle = "The Datacenter as a Computer: Designing Warehouse-Scale
+	             Machines",
+	year = "2019",
+	publisher = "Springer International Publishing",
+	address = "Cham",
+	pages = "99--127",
+	abstract = "Energy efficiency has been a major technology driver in the
+	            mobile and embedded areas for a long time. Work in this area
+	            originally emphasized extending battery life, but then expanded
+	            to include reducing peak power because thermal constraints began
+	            to limit further CPU performance improvements or packaging
+	            density in small devices. However, energy management is also a
+	            key issue for servers and data center operations, one that
+	            focuses on reducing all energy-related costs, including capital
+	            and operating expenses as well as environmental impacts. Many
+	            energy-saving techniques developed for mobile devices are natural
+	            candidates for tackling this new problem space, but ultimately a
+	            WSC is quite different from a mobile device. In this chapter, we
+	            describe some of the most relevant aspects of energy and power
+	            efficiency for WSCs, starting at the data center level and
+	            continuing to component-level issues.",
+	isbn = "978-3-031-01761-2",
+	doi = "10.1007/978-3-031-01761-2_5",
+	url = "https://doi.org/10.1007/978-3-031-01761-2_5",
 }
 

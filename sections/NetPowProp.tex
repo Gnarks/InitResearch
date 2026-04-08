@@ -1,0 +1,120 @@
+
+\section{It Is Time to Address Network Power Proportionality}
+\subsection{Introduction}
+In recent year, networking hardware has primarily focused on speed.
+This initiative leads manufacturer to overlook the power efficiency of their devices.
+In contrary, computing hardware has gained more attention to its power proportionality, primarily due to its larger power footprint.
+
+In this section, we explore an article \cite{NetPowProp} addressing such network hardware device power proportionality issues and possible solutions.
+To this end, the article first tackles a concrete example of a machine learning cluster.
+This scenario is somewhat of a worst case scenario to argue for network power proportionality, has the computational power demand is subsequently larger than the networking one.
+Regardless, it is observed in Section \ref{sec:PowMod} that, mainly due to its poor power proportionality, the network accounts for an average of 12\% of the total power footprint.
+
+Section \ref{sec:impact} quantifies the power drawn due to the poor network power proportionality and evaluate the impact of different power proportionality within the cluster power draw.
+\unsure{simply cite their results here ?}
+
+Section \ref{sec:PowSol} explores possibles improvements originating from already implemented power proportionality mechanisms from computing hardware by transposing them to networking hardware.
+
+
+\subsection{Modeling}\label{sec:PowMod}
+The article analyses a production machine learning cluster and workload described in a paper from Alibaba \cite{MLCluster}. It features :
+\begin{itemize}
+	\item 15k hosts, running on Nvidia H100 GPUs (8 per server)
+	\item a \qty{100}{G\bit/\s} interface per GPU 
+	\item a fat tree topology using \qty{51.2}{\tera\bit\s} switches
+	\item a workload with a 10\% \textit{communication ratio}
+\end{itemize}
+The \textbf{workload model} is assumed as a sequence of computation and communication phases.
+Both phases are considered independent, and hardware resources are considered working at full speed at their turn and idles otherwise. 
+An iteration is formed of a computation and communication phase.
+The \textit{communication ratio} is the time proportion of the communication phase in an iteration.   
+The workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two. 
+
+
+The \textbf{power model} defines what is taken into account for the power drawn by hardware resources. 
+As the resources are considered either idle or working at full speed, two power states are considered: either at \textit{max power} or \textit{idle power}.  
+\textit{Power proportionality} is defined as 
+\[
+	\textnormal{power proportionality} = \frac{\textnormal{max power} - \textnormal{idle power}}{\textnormal{max power}}
+\]
+
+On the computing side, \qty{500}{\watt} is considered as the max power and \qty{75}{\watt} as the idle power. Resulting in a power proportionality of 85\% as reported by \cite{ComputePowProp}.
+
+On the networking side, the article doesn't mention the exact number used but considers 10\% power proportionality and \qty{750}{\watt} per switch in addition to \qty{25.4}{\watt} per NIC and \qty{10}{\watt} per transceiver.
+
+It is then interpolated using the formulas from \cite{Demy} how many switches are needed in the fat-tree topology.
+It is \unsure{what to say ?} unclear how exactly the calculations are made to be able to compute the impact on power proportionality.
+\unsure[inline]{should I email them about it ?}
+
+\subsection{Impact of Poor Power Proportionality}\label{sec:impact}
+The power footprint of the network and the compute for the examined ML cluster is quantified and presented in Figure \ref{fig:PowFootprint} with respect of the phase and in average.   
+As expected, compute has the larger footprint during the computation phase.
+However, an interesting observation is to be made regarding the network power footprint in absolute terms (Fig. \ref{fig:PowAbs}).
+Due to the low power proportionality of the network, its footprint stays relatively constant across both phases. 
+Moreover, as the network is idling 90\% of the time, its efficiency computed as $\frac{\textnormal{usefull power}}{\textnormal{total power}}$ reach as low as 11\%.
+Adding the fact that the network power footprint is around, on average, 12\%, the question of increasing the network power proportionality is relevant to explore.  
+
+Investigating the power savings resulting from an increase in network power proportionality the article \cite{NetPowProp} finds interesting results.
+At the considered bandwidth of the cluster, with 50\% (resp. 85\%) power proportionality the power savings would be around 5\% (resp. 9\%) of the total cluster power.
+Knowing the power proportionality of computing hardware is considered at 85\% \cite{ComputePowProp},  
+
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[t]{\textwidth}
+		\centering
+		\includegraphics[width=0.95\textwidth]{figures/PowerFootPrintPhase.png}
+		\caption{Comparison of the phases and in average.}
+	\end{subfigure}
+	\begin{subfigure}[t]{\textwidth}
+		\centering
+		\includegraphics[width=0.95\textwidth]{figures/PowerFootPrintComp.png}
+		\caption{Iteration standpoint with efficiency perspective.}\label{fig:PowAbs}
+	\end{subfigure}
+	\caption{Power footprint of the examined ML cluster.}\label{fig:PowFootprint}
+\end{figure}
+
+\subsection{Increasing power proportionality in the network}\label{sec:PowSol}
+This section focuses on increasing the network power proportionality by exploring implemented optimisations from computing hardware.
+Those optimisations can be separated in two categories, static optimisation, \textit{i.e.} adjusting hardware to have the lowest power draw at zero load and dynamic optimisation, \textit{i.e.} scaling power demand with the load.
+
+\textbf{Static Opt.1: Exposing power knobs}\\
+\textit{From computing hardware} : Users are able with gating mechanisms to power off unnecessary components such as PCIe slots or memory banks.
+Often times those parameters are also applicable to OS features and are packaged under predefined configurations, \textit{e.g.} CPU C-states. \\
+\textit{To networking hardware} : Such configurations could also be applied to networking hardware.
+For example, a 3 layer switch used only for L2 capabilities isn't required to have routing tables which could then be turned off.\\
+\textit{Challenges} : Just as CPU manufacturer, network hardware manufacturer aren't keen on giving too much information about the components and architecture. 
+Thus, finding a balance between secrecy and modularity should be addressed to enable users to have as much control as possible without exposing hardware details.
+
+
+\textbf{Static Opt.2: Scheduling network jobs}
+\\\textit{From computing hardware} : In ML clusters, job schedulers enable traffic to be directed to a restrained set of servers to free other servers from running at full pace or completely.   
+\\\textit{To computing hardware} : Similar mechanism could be introduced by using Optical Circuit Switches (OCSs). Such switches avoid the optical - electrical - optical conversion and works directly with optical signals. 
+As those switches use (physical) mirrors, their reconfiguration speed is slow.
+Though in the case of an ML cluster, reconfigurations follow the ML training job which may last for hours or days.
+This permits the use of OCS in such environment. 
+\\\textit{Challenges} : The placement of such OCS in the cluster topology could leverage the cluster's job schedules.
+Though the number and placement of those switches is an interesting question with an underlying trade-off between energy savings and reaction time. 
+
+
+\textbf{Dynamic Opt.1: Rate adaptation}
+\\\textit{From computing hardware} : A classic rate adaptation implementation is the dynamic voltage and frequency scaling (DVFS), which can reduces the clock speed of cores depending on the load. 
+\\\textit{To networking hardware} : DVFS can be applied in a router's control plane, but wouldn't save much energy as it only consumes a fraction of the router's power footprint.
+However, applying such concept to the data plane by, for example, reducing the ASIC's clock frequency or turning of an interface's SerDes component.  Moreover, it could also be applied to network interface cards and transceivers as their power footprint share isn't negligible.
+\\\textit{Challenges} : Rate adaptation of the ASIC's clock isn't perfect as it would require ASIC's pipelines to be independent.
+Though, this would need an ASIC redesign which is a substantial change. 
+
+
+\textbf{Dynamic Opt.2: Turning off pipelines}
+\\\textit{From computing hardware} : Depending on the load, CPUs are capable of turning of some of their cores. 
+\\\textit{To networking hardware} : Turning of pipelines, which are the physical unit in charge of packet arrival and departure, would significantly reduce power footprint. 
+\\\textit{Challenges} : In actual ASICs, pipelines are tight to a subset of ports. Which makes turning of entire pipelines more complex, as it would simply turn of all the ports its tight to.
+A solution could be to introduce an (optical) circuit switch in front of a switch's ports to map packets arrival in the active pipelines.
+Though a possible solution, it introduces latency in the system as the circuit switch might not consume much but would need buffering which induces the decoding and re-encoding of the packet, consuming energy.
+
+\subsection{Conclusion}
+In conclusion, the paper highlights the importance of the network power footprint and argues the need to increase its power proportionality.
+To support their position, the transposition of mechanisms from the computing to the networking hardware is explored. 
+
+
+
+
