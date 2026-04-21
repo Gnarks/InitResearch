@@ -3,7 +3,7 @@
 \subsection{Introduction}
 In recent year, networking hardware has primarily focused on speed.
 This initiative leads manufacturer to overlook the power efficiency of their devices.
-In contrary, computing hardware has gained more attention to its power proportionality, primarily due to its larger power footprint.
+In contrary, computing hardware has gained more attention to its power proportionality and efficiency, primarily due to its larger power footprint.
 
 In this section, we explore an article \cite{NetPowProp} addressing such network hardware device power proportionality issues and possible solutions.
 To this end, the article first tackles a concrete example of a machine learning cluster.
@@ -11,7 +11,6 @@ This scenario is somewhat of a worst case scenario to argue for network power pr
 Regardless, it is observed in Section \ref{sec:PowMod} that, mainly due to its poor power proportionality, the network accounts for an average of 12\% of the total power footprint.
 
 Section \ref{sec:impact} quantifies the power drawn due to the poor network power proportionality and evaluate the impact of different power proportionality within the cluster power draw.
-\unsure{simply cite their results here ?}
 
 Section \ref{sec:PowSol} explores possibles improvements originating from already implemented power proportionality mechanisms from computing hardware by transposing them to networking hardware.
 
@@ -20,31 +19,95 @@ Section \ref{sec:PowSol} explores possibles improvements originating from alread
 The article analyses a production machine learning cluster and workload described in a paper from Alibaba \cite{MLCluster}. It features :
 \begin{itemize}
 	\item 15k hosts, running on Nvidia H100 GPUs (8 per server)
-	\item a \qty{100}{G\bit/\s} interface per GPU 
+	\item a \qty{400}{G\bit/\s} interface per GPU 
 	\item a fat tree topology using \qty{51.2}{\tera\bit\s} switches
 	\item a workload with a 10\% \textit{communication ratio}
 \end{itemize}
+
 The \textbf{workload model} is assumed as a sequence of computation and communication phases.
-Both phases are considered independent, and hardware resources are considered working at full speed at their turn and idles otherwise. 
+Both phases are considered independent, and hardware resources are considered working at full speed at their turn and idles otherwise. It simplifies the model and might underestimate the real values. 
 An iteration is formed of a computation and communication phase.
-The \textit{communication ratio} is the time proportion of the communication phase in an iteration.   
-The workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two. 
+\begin{definition}
+	The \textit{communication ratio} is the time proportion of the communication phase in an iteration.
+\end{definition}
+The workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two. This assumption is practical and disregards complex behaviors when scaling up the model but is clearly an oversimplification. 
+
+The \textbf{power model} defines what is taken into account for the power drawn by hardware resources. Following the phases, resources are considered in one of two states, either at \textit{max power} during their turn or at \textit{idle power} when idling. 
+
+\begin{definition}
+The power proportionality of a device, given its maximum power and idle power is given by :
+$$\textnormal{power proportionality} = \frac{\textnormal{max power} - \textnormal{idle power}}{\textnormal{max power}} $$
+\end{definition}
+The power proportionality of a device is a measure of how much its consumption follows its workload demand. A power proportionality of $100\%$ would scale linearly in power draw in function of its workload, as observed by the dashed line in Figure \ref{fig:GraphPowProp}. 
+
+Regarding the power drawn by each side during an iteration the following consideration are taken into account :
+\\On the \textit{computing side}, the maximum power is \qty{500}{\watt} per host (\qty{400}{\watt} for the GPU and \qty{100}{\watt} for CPUs, RAM, storage and fans). The power proportionality is 85\% \cite{ComputePowProp} resulting in an idle power of \qty{75}{\watt}. The power proportionality of the computing side is represented in red in Figure \ref{fig:GraphPowProp}.
+\\On the \textit{networking side}, the article model Switches, NICs and transceivers with 10\% power proportionality, represented in blue in Figure \ref{fig:GraphPowProp} A switch has a \qty{750}{\watt} maximum power resulting in \qty{675}{\watt} in idle power. The power draw of NICs and transceivers with respect to the considered bandwidth is featured in Table \ref{tab:PowNicTrans}, missing values are extrapolated linearly with the last available value.
+
+\begin{table}[t]
+	\caption{Maximum power values for network components.}\label{tab:PowNicTrans}
+	\centering
+		\begin{tabular}[c]{cccccc}
+			\toprule
+			Bandwidth(Gbps) & 100 & 200 & 400 & 800 & 1600 \\
+
+			\hline
+			NIC & 8.6 & 16.7 & 25.4 & 38.6* & 58.8*\\ 
+			\hline
+
+			transceivers & 4 & 6.5 & 10 & 16.5 & 27.2*\\ 
+			\bottomrule
+		\end{tabular}
+		\caption*{ \hspace{4.5cm} * linearly extrapolated value}
+\end{table}
+
+The number of switches in the model is calculated from formulas \cite{Demy} considering a fat-tree topology and interpolate if the number of hosts is between what a certain number of stages (layers) could support. This interpolation makes it really difficult to reproduce their results and find the same number of switches.
+The number of NICs is simply the number of hosts, \textit{i.e.} 15k.
+On the other hand the number of transceivers to consider isn't clear in the paper. It mentions that the transceivers between end hosts and top of rack switches are electrical which has a negligible impact on the power. Moreover, as calculating the number of switches is hard to reproduce, the number of transceivers for the connections between switches is also hard to reproduce.
 
 
-The \textbf{power model} defines what is taken into account for the power drawn by hardware resources. 
-As the resources are considered either idle or working at full speed, two power states are considered: either at \textit{max power} or \textit{idle power}.  
-\textit{Power proportionality} is defined as 
-\[
-	\textnormal{power proportionality} = \frac{\textnormal{max power} - \textnormal{idle power}}{\textnormal{max power}}
-\]
+\todo[inline]{Include a table of my attempt at reproducing their results}
 
-On the computing side, \qty{500}{\watt} is considered as the max power and \qty{75}{\watt} as the idle power. Resulting in a power proportionality of 85\% as reported by \cite{ComputePowProp}.
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
 
-On the networking side, the article doesn't mention the exact number used but considers 10\% power proportionality and \qty{750}{\watt} per switch in addition to \qty{25.4}{\watt} per NIC and \qty{10}{\watt} per transceiver.
+		% --- Grid/Axes Setup ---
+		\draw[->, thick] (0,0) -- (6.5,0) node[below=16pt, pos=0.5] {Workload};
+		\draw[->, thick] (0,0) -- (0,5.5) node[left=40pt, rotate=90, pos=0.6] {Power};
 
-It is then interpolated using the formulas from \cite{Demy} how many switches are needed in the fat-tree topology.
-It is \unsure{what to say ?} unclear how exactly the calculations are made to be able to compute the impact on power proportionality.
-\unsure[inline]{should I email them about it ?}
+		% --- Tick Marks ---
+		% X-axis
+		\foreach \x/\label in {0/0 \%, 3/50 \%, 6/100 \%} {
+			\draw[thick] (\x, -0.1) -- (\x, 0.1);
+			\node[below=3pt] at (\x, 0) {\label};
+		}
+		% Y-axis
+		\foreach \y/\label in {0.75/15 \%, 2.5/50 \%, 5/100 \%, 4.5/90 \%} {
+			\draw[thick] (-0.1, \y) -- (0.1, \y);
+			\node[left=3pt] at (0, \y) {\label};
+		}
+
+		% --- The Curves ---
+		
+		% Optimal Line (Dashed)
+		\draw[dashed, thick] (0,0) -- (6,5) node[midway, below right, yshift=2pt] {Optimal};
+
+		% network Line 
+		\draw[thick, color=blue] (0,0) -- (0,4.5);
+		\draw[thick, color=blue] (0,4.5) -- (6,5) node[midway, above left, yshift=2pt] {Network};
+
+		% compute Line 
+		\draw[thick, color=red] (0,0) -- (0,0.75);
+		\draw[thick, color=red] (0,0.75) -- (6,5) node[midway, above left, yshift=2pt] {Compute};
+
+		
+
+	\end{tikzpicture}
+	\caption{Power Proportionality relations.}\label{fig:GraphPowProp}
+\end{figure}
+
+The communication ratio and power proportionality are the two main factors of the network's poor efficiency which will be discussed in \ref{sec:impact}.
 
 \subsection{Impact of Poor Power Proportionality}\label{sec:impact}
 The power footprint of the network and the compute for the examined ML cluster is quantified and presented in Figure \ref{fig:PowFootprint} with respect of the phase and in average.   
