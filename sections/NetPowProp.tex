@@ -65,18 +65,23 @@ text color=white}
 
 \section{It Is Time to Address Network Power Proportionality}
 \subsection{Introduction}
-In recent year, networking hardware has primarily focused on speed.
-This initiative leads manufacturer to overlook the power efficiency of their devices.
-In contrary, computing hardware has gained more attention to its power proportionality and efficiency, primarily due to its larger power footprint.
+In recent years, due to the growth in data centers and machine learning clusters traffic, networking hardware has prioritized throughput and performance.
+This trend led manufacturers to overlook the power efficiency of their devices at the cost of their energy to load efficiency.
+
+The metric used to track this energy consumption to load efficiency is power proportionality. 
+An ideal power proportional device would consume power in direct proportion to the work performed. 
+In opposite, a non-power proportional device would consume power near maximum regardless of the work performed. 
+It is distinct of the power efficiency, as it focuses on the relation between the power and the work whereas power efficiency focuses on the work done per power consumption.   
+
+On the contrary, computing hardware has gained more attention to its power proportionality and efficiency. It is primarily due to its larger power footprint globally, as computing hardware is abundant and its idling cost, especially in large scale deployments, should stay low.
 
 In this section, we explore an article \cite{NetPowProp} addressing such network hardware device power proportionality issues and possible solutions.
-To this end, the article first tackles a concrete example of a machine learning cluster.
-This scenario is somewhat of a worst case scenario to argue for network power proportionality, has the computational power demand is subsequently larger than the networking one.
-Regardless, it is observed in Section \ref{sec:PowMod} that, mainly due to its poor power proportionality, the network accounts for an average of 12\% of the total power footprint.
+To this end, the article first tackles and models a concrete example of a machine learning cluster modeled in Section \ref{sec:PowMod}.
+This scenario is somewhat of a worst case scenario to argue for network power proportionality, as the computational power demand is subsequently larger than the networking one. 
 
-Section \ref{sec:impact} quantifies the power drawn due to the poor network power proportionality and evaluate the impact of different power proportionality within the cluster power draw.
+However, it is observed  (Section \ref{sec:impact}) that, mainly due to the combination of poor power proportionality and low time usage, the network accounts for an average of 12\% of the total power footprint in the cluster. Which implies that in less computationally heavy environments such as data centers the share of power consumption of the network should be a concern.   
 
-Section \ref{sec:PowSol} explores possibles improvements originating from already implemented power proportionality mechanisms from computing hardware by transposing them to networking hardware.
+Finally, Section \ref{sec:PowSol} explores possible improvements originating from already implemented power proportionality mechanisms from computing hardware by transposing them to networking hardware.
 
 
 \subsection{Modeling}\label{sec:PowMod}
