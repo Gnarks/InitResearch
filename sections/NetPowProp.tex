@@ -1,3 +1,67 @@
+\pgfkeys{/donut/.cd,
+inner radius/.initial=1cm,
+inner radius=1cm,
+outer radius/.initial=3cm,
+outer radius=3cm,
+text color/.initial=white,
+text color=white}
+\newcommand{\donutchart}[3][]{
+   % Calculate total
+   \pgfmathsetmacro{\totalnum}{0}
+   \foreach [count=\n] \value/\colour/\name in {#2} {
+     \pgfmathparse{\value+\totalnum}
+     \global\let\totalnum=\pgfmathresult
+     \xdef\numitems{\n}
+   }
+	\xdef\midText{#3}
+
+  \begin{tikzpicture}
+  \pgfmathsetmacro{\wheelwidth}{\pgfkeysvalueof{/donut/outer
+  radius}-\pgfkeysvalueof{/donut/inner radius}}
+  \pgfmathsetmacro{\midradius}{(\pgfkeysvalueof{/donut/outer radius}
+  +\pgfkeysvalueof{/donut/inner radius})/2}
+
+  \begin{scope}[#1]
+
+    \pgfmathsetmacro{\cumnum}{0}
+    \foreach \value/\colour/\name in {#2} {
+        \pgfmathsetmacro{\newcumnum}{\cumnum + \value/\totalnum*360}
+
+        \pgfmathsetmacro{\midangle}{-(\cumnum+\newcumnum)/2}
+        \begin{scope}[on background layer]
+          \filldraw[draw=white,fill=\colour]
+          (-\cumnum:\pgfkeysvalueof{/donut/outer radius}) 
+           arc(-\cumnum:-(\newcumnum):\pgfkeysvalueof{/donut/outer radius}) --
+          (-\newcumnum:\pgfkeysvalueof{/donut/inner radius}) 
+          arc(-\newcumnum:-(\cumnum):\pgfkeysvalueof{/donut/inner radius}) -- cycle;
+        \end{scope}
+
+			%draw
+		\pgfmathparse{ifthenelse(\value < 5, 1, 0)}
+		\ifnum\pgfmathresult=1
+			\draw node [text=black, font=\bfseries\sffamily] at (\midangle:{\pgfkeysvalueof{/donut/inner radius}+\wheelwidth*1.2}) {\value \%};
+		\else
+			\draw node [text=\pgfkeysvalueof{/donut/text color}, 
+			font=\bfseries\sffamily] at 
+			(\midangle:{\pgfkeysvalueof{/donut/inner radius}+\wheelwidth/2}) {\value \%};
+		\fi
+
+
+        \global\let\cumnum=\newcumnum
+    }
+    
+    % \node[text width=\textwidth] at (-4,0) {
+    %     \foreach \value/\colour/\name in {#2} {
+    %        {\color{\colour}\textbullet}\space\name \\
+    %     }    
+    % };
+    
+    \node at (0,0) {\midText};
+    
+  \end{scope}
+
+  \end{tikzpicture}}
+
 
 \section{It Is Time to Address Network Power Proportionality}
 \subsection{Introduction}
@@ -90,12 +154,10 @@ The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by 
 		\begin{tabular}[c]{cccccc}
 			\toprule
 			Bandwidth(Gbps) & 100 & 200 & 400 & 800 & 1600 \\
-
 			\hline
-			number of switches & 230 & 230 & 571 & 1339 & 2876 \\ 
+			number of switches & 239 & 239 & 571 & 1339 & 2876 \\ 
 			\hline
-
-			number of transceivers & 29914 & 29914  & 81807 & 202425 & 443662 \\ 
+			number of transceivers & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
 			\bottomrule
 		\end{tabular}
 \end{table}
@@ -141,32 +203,111 @@ The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by 
 \end{figure}
 
 \subsection{Impact of Poor Power Proportionality}\label{sec:impact}
-The power footprint of the network and the compute for the examined ML cluster is quantified by the article and presented in Figure \ref{fig:PowFootprint} with respect of the phase and in average.   
+The power footprint of the network and the compute for the examined ML cluster calculated by the article is presented in Figure \ref{fig:PowFootprint} depending on the phase.   
+In comparison, the attempt at reproducing the article's results is presented in Figure \ref{fig:ownPowFootprint}. 
+The main difference is the number of switches making the number of transceivers explode in the attempt.
+
+Though, both results share similar results:
 As expected, compute has the larger footprint during the computation phase.
-However, an interesting observation is to be made regarding the network power footprint in absolute terms (Fig. \ref{fig:PowAbs}).
+However, an interesting observation is to be made regarding the network power footprint in absolute terms (Fig. \ref{fig:PowAbs}) which is computed from the article.
 Due to the low power proportionality of the network, its footprint stays relatively constant across both phases. 
 Moreover, as the network is idling 90\% of the time, its efficiency computed as $\frac{\textnormal{usefull power}}{\textnormal{total power}}$ reach as low as 11\%.
 Adding the fact that the network power footprint is around, on average, 12\%, the question of increasing the network power proportionality is relevant to explore.  
 
 Investigating the power savings resulting from an increase in network power proportionality the article \cite{NetPowProp} finds interesting results.
 At the considered bandwidth of the cluster, with 50\% (resp. 85\%) power proportionality the power savings would be around 5\% (resp. 9\%) of the total cluster power.
-Knowing the power proportionality of computing hardware is considered at 85\% \cite{ComputePowProp},  
-
 
 \begin{figure}[ht]
-	\centering
-	\begin{subfigure}[t]{\textwidth}
-		\centering
-		\includegraphics[width=0.95\textwidth]{figures/PowerFootPrintPhase.png}
-		\caption{Comparison of the phases and in average.}
-	\end{subfigure}
-	\begin{subfigure}[t]{\textwidth}
 		\centering
 		\includegraphics[width=0.95\textwidth]{figures/PowerFootPrintComp.png}
-		\caption{Iteration standpoint with efficiency perspective.}\label{fig:PowAbs}
-	\end{subfigure}
-	\caption{Power footprint of the examined ML cluster.}\label{fig:PowFootprint}
+	\caption{Power footprint with an iteration standpoint and efficiency perspective.}\label{fig:PowAbs}
 \end{figure}
+
+
+\newpage
+\begin{figure}[ht]
+	\centering
+
+	\begin{subfigure}[t]{\textwidth}
+		\centering
+
+	\begin{tikzpicture}[
+    square/.style={minimum size=0.6cm, inner sep=0pt},
+	label_text/.style={font=\sffamily\Large, anchor=west, xshift=0.3cm}]
+    % --- First Column ---
+    \node[square, fill=Fuchsia] (s1) {};
+    \node[label_text] at (s1.east) {GPU and Servers};
+    \node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
+    \node[label_text] at (s2.east) {Transceivers};
+
+    % --- Second Column ---
+    % Positioned 4cm to the right of the first column
+    \node[square, fill=ForestGreen, right=6cm of s1] (s3) {};
+    \node[label_text] at (s3.east) {NICs};
+
+    \node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
+    \node[label_text] at (s4.east) {Switches};
+
+\end{tikzpicture}	
+
+
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+\donutchart[rotate=90]{89.1/Fuchsia/GPU and Servers, 3.1/Turquoise/Switchs, 3.7/BrickRed/Transceivers, 4.1/ForestGreen/NICs}{\qty{8.4}{\mega\watt}}
+		\caption{Computation phase}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+\donutchart[rotate=90]{52.6/Fuchsia/GPU and Servers, 13.5/Turquoise/Switchs, 16.1/BrickRed/Transceivers, 17.8/ForestGreen/NICs}{\qty{2.1}{\mega\watt}}
+		\caption{Communication phase}
+	\end{subfigure}
+	\caption{Power footprint of the examined ML cluster calculated by the article.}\label{fig:PowFootprint}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+
+	\begin{subfigure}[t]{\textwidth}
+		\centering
+
+	\begin{tikzpicture}[
+    square/.style={minimum size=0.6cm, inner sep=0pt},
+	label_text/.style={font=\sffamily\Large, anchor=west, xshift=0.3cm}]
+    % --- First Column ---
+    \node[square, fill=Fuchsia] (s1) {};
+    \node[label_text] at (s1.east) {GPU and Servers};
+    \node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
+    \node[label_text] at (s2.east) {Transceivers};
+
+    % --- Second Column ---
+    % Positioned 4cm to the right of the first column
+    \node[square, fill=ForestGreen, right=6cm of s1] (s3) {};
+    \node[label_text] at (s3.east) {NICs};
+
+    \node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
+    \node[label_text] at (s4.east) {Switches};
+
+
+\end{tikzpicture}	
+
+
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+\donutchart[rotate=90]{84.3/Fuchsia/GPU and Servers, 4.3/Turquoise/Switchs, 3.8/BrickRed/Transceivers, 8.6/ForestGreen/NICs}{\qty{8.9}{\mega\watt}}
+		\caption{Computation phase}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+\donutchart[rotate=90]{40.4/Fuchsia/GPU and Servers, 15.4/Turquoise/Switchs, 30.5/BrickRed/Transceivers, 13.7/ForestGreen/NICs}{\qty{2.8}{\mega\watt}}
+		\caption{Communication phase}
+	\end{subfigure}
+	\caption{Calculated Attempt at power footprint of the examined ML cluster.}\label{fig:ownPowFootprint}
+\end{figure}
+
 
 \subsection{Increasing power proportionality in the network}\label{sec:PowSol}
 This section focuses on increasing the network power proportionality by exploring implemented optimisations from computing hardware.
