@@ -55,18 +55,51 @@ Regarding the power drawn by each side during an iteration the following conside
 			NIC & 8.6 & 16.7 & 25.4 & 38.6* & 58.8*\\ 
 			\hline
 
-			transceivers & 4 & 6.5 & 10 & 16.5 & 27.2*\\ 
+			transceiver & 4 & 6.5 & 10 & 16.5 & 27.2*\\ 
 			\bottomrule
 		\end{tabular}
 		\caption*{ \hspace{4.5cm} * linearly extrapolated value}
 \end{table}
 
-The number of switches in the model is calculated from formulas \cite{Demy} considering a fat-tree topology and interpolate if the number of hosts is between what a certain number of stages (layers) could support. This interpolation makes it really difficult to reproduce their results and find the same number of switches.
-The number of NICs is simply the number of hosts, \textit{i.e.} 15k.
-On the other hand the number of transceivers to consider isn't clear in the paper. It mentions that the transceivers between end hosts and top of rack switches are electrical which has a negligible impact on the power. Moreover, as calculating the number of switches is hard to reproduce, the number of transceivers for the connections between switches is also hard to reproduce.
+To be able to calculate the overall power drawn, knowing the number of switches, NICs and transceivers is necessary.
+The number of switches in the model is calculated from formulas \cite{Demy} considering a fat-tree topology and is interpolated if the number of hosts is between what a certain number of stages (layers) could support. This interpolation isn't precisely disclosed and makes it really difficult to reproduce their results and find the same number of switches.
+The number of NICs correspond to the number of hosts, \textit{i.e.} 15k.
+The number of transceivers to consider isn't clear in the paper. It mentions that the transceivers between end hosts and top of rack switches are electrical which have a negligible impact on the power. Moreover, as calculating the number of switches is hard to reproduce, the number of transceivers for the connections between switches is also hard to reproduce.
 
+An attempt at reproducing the article's results on numbers of networks resources is presented in Table \ref{tab:PowAttempt}. 
+In this attempt is used the same formulas \cite{Demy} in addition to a visualiser \cite{fatTreeVis}. A clear problem of using those formulas is that it assumes an even distribution of upstream and downstream ports which isn't the case for the considered switches with 60 upstream and 128 downstream ports. The number of ports in this attempt is considered to be 188.  
+The number of switches is interpolated linearly between the two found bounds of layers in which the number of hosts belong.
+\begin{definition}[linear interpolation]
+	Given $l$ and $u$ the lower and upper bound of layers such that\\
+	$H_l$ and $H_u$ the numbers of hosts for the lower and upper bounds contains $H$ the number of host to connect.\\
+	i.e. $H_l \leq H \leq H_u$ \\
+	Given $S_l$ and $S_u$ the number of switches used in the fat tree topology with the lower and upper bound layers.  
 
-\todo[inline]{Include a table of my attempt at reproducing their results}
+	The total number of switches is :
+	$$ S_{tot} = \frac{H - H_l}{H_u - H_l} \times (S_u - S_l) + S_l$$
+	
+\end{definition}
+
+For example, for the 400Gbps case (the Alibaba's pod), the 15 000 hosts have to be connected with 2 links, as the switches use 200G downstream ports. 
+For the calculation, 30K hosts are then considered resulting in $u = 3$, $l = 2$ as $H_u = 1,882,384$ and $H_l = 19,208$. This leads to $S_u = 48,020$ and $S_l = 294$ giving $S_{tot} = 570.44$ rounded to $S_{tot} = 571$.
+The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by $T_u$ and $T_l$ the lower and upper number of transceivers between switches.
+
+\begin{table}[t]
+	\caption{Assumed number of network resources depending on the bandwidth.}\label{tab:PowAttempt}
+	\centering
+		\begin{tabular}[c]{cccccc}
+			\toprule
+			Bandwidth(Gbps) & 100 & 200 & 400 & 800 & 1600 \\
+
+			\hline
+			number of switches & 230 & 230 & 571 & 1339 & 2876 \\ 
+			\hline
+
+			number of transceivers & 29914 & 29914  & 81807 & 202425 & 443662 \\ 
+			\bottomrule
+		\end{tabular}
+\end{table}
+
 
 \begin{figure}[ht]
 	\centering
@@ -107,10 +140,8 @@ On the other hand the number of transceivers to consider isn't clear in the pape
 	\caption{Power Proportionality relations.}\label{fig:GraphPowProp}
 \end{figure}
 
-The communication ratio and power proportionality are the two main factors of the network's poor efficiency which will be discussed in \ref{sec:impact}.
-
 \subsection{Impact of Poor Power Proportionality}\label{sec:impact}
-The power footprint of the network and the compute for the examined ML cluster is quantified and presented in Figure \ref{fig:PowFootprint} with respect of the phase and in average.   
+The power footprint of the network and the compute for the examined ML cluster is quantified by the article and presented in Figure \ref{fig:PowFootprint} with respect of the phase and in average.   
 As expected, compute has the larger footprint during the computation phase.
 However, an interesting observation is to be made regarding the network power footprint in absolute terms (Fig. \ref{fig:PowAbs}).
 Due to the low power proportionality of the network, its footprint stays relatively constant across both phases. 
@@ -120,6 +151,7 @@ Adding the fact that the network power footprint is around, on average, 12\%, th
 Investigating the power savings resulting from an increase in network power proportionality the article \cite{NetPowProp} finds interesting results.
 At the considered bandwidth of the cluster, with 50\% (resp. 85\%) power proportionality the power savings would be around 5\% (resp. 9\%) of the total cluster power.
 Knowing the power proportionality of computing hardware is considered at 85\% \cite{ComputePowProp},  
+
 
 \begin{figure}[ht]
 	\centering
