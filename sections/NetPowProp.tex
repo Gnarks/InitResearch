@@ -85,33 +85,43 @@ Finally, Section \ref{sec:PowSol} explores possible improvements originating fro
 
 
 \subsection{Modeling}\label{sec:PowMod}
-The article analyses a production machine learning cluster and workload described in a paper from Alibaba \cite{MLCluster}. It features :
+The article analyses a production state-of-the art machine learning cluster described in a paper from Alibaba \cite{MLCluster}. It features :
 \begin{itemize}
 	\item 15k hosts, running on Nvidia H100 GPUs (8 per server)
-	\item a \qty{400}{G\bit/\s} interface per GPU 
+	\item a \qty{400}{Gbps} interface per GPU 
 	\item a fat tree topology using \qty{51.2}{\tera\bit\s} switches
-	\item a workload with a 10\% \textit{communication ratio}
 \end{itemize}
 
-The \textbf{workload model} is assumed as a sequence of computation and communication phases.
-Both phases are considered independent, and hardware resources are considered working at full speed at their turn and idles otherwise. It simplifies the model and might underestimate the real values. 
-An iteration is formed of a computation and communication phase.
-\begin{definition}
-	The \textit{communication ratio} is the time proportion of the communication phase in an iteration.
+The \textbf{workload model} uses sequences of computation and communication phases.
+Both phases are considered independent, the transition between them is instantaneous.
+During the computation phase, GPUs are consuming maximum power whereas the network is idle and vice-versa.  
+The workload of the cluster is modeled with a 10\% \textit{communication ratio}.
+\begin{definition}[communication ratio]\label{def:comRatio}
+	The \textit{communication ratio} is the time proportion of the communication phase in an iteration. Given $Cm$ (resp. $Cp$) the time of the communication (resp. computation) phase, the communication is given by :
+	$$ R = \frac{Cm+Cp}{Cm}$$
 \end{definition}
-The workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two. This assumption is practical and disregards complex behaviors when scaling up the model but is clearly an oversimplification. 
+Finally, the workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two.
 
-The \textbf{power model} defines what is taken into account for the power drawn by hardware resources. Following the phases, resources are considered in one of two states, either at \textit{max power} during their turn or at \textit{idle power} when idling. 
+This model is a practical yet oversimplification that disregards complex behaviors to ease calculations. 
+An example of such behavior is the assumption of instantaneous transitions, as moving phases has a cost in energy and latency. Moreover, linearly scaling execution time with resources (Definition \ref{def:comRatio}) overlooks important hardware and protocol overheads as described by Amdahl's law.     
+
+The \textbf{power model} defines what is taken into account to calculate the drawn power by hardware resources.
+Following the phases, resources are in one of two states, either at \textit{max power} during their corresponding phase or at \textit{idle power} when idling. 
 
 \begin{definition}
-The power proportionality of a device, given its maximum power and idle power is given by :
+	The power proportionality of a device, given its \textnormal{maximum power} and \textnormal{idle power} is given by :
 $$\textnormal{power proportionality} = \frac{\textnormal{max power} - \textnormal{idle power}}{\textnormal{max power}} $$
 \end{definition}
-The power proportionality of a device is a measure of how much its consumption follows its workload demand. A power proportionality of $100\%$ would scale linearly in power draw in function of its workload, as observed by the dashed line in Figure \ref{fig:GraphPowProp}. 
+The power proportionality of a device is a measure of how much its consumption follows its workload demand.
+A power proportionality of $100\%$ would scale linearly in power draw in function of its workload, as observed by the dashed line in Figure \ref{fig:GraphPowProp}. 
 
 Regarding the power drawn by each side during an iteration the following consideration are taken into account :
 \\On the \textit{computing side}, the maximum power is \qty{500}{\watt} per host (\qty{400}{\watt} for the GPU and \qty{100}{\watt} for CPUs, RAM, storage and fans). The power proportionality is 85\% \cite{ComputePowProp} resulting in an idle power of \qty{75}{\watt}. The power proportionality of the computing side is represented in red in Figure \ref{fig:GraphPowProp}.
-\\On the \textit{networking side}, the article model Switches, NICs and transceivers with 10\% power proportionality, represented in blue in Figure \ref{fig:GraphPowProp} A switch has a \qty{750}{\watt} maximum power resulting in \qty{675}{\watt} in idle power. The power draw of NICs and transceivers with respect to the considered bandwidth is featured in Table \ref{tab:PowNicTrans}, missing values are extrapolated linearly with the last available value.
+\\On the \textit{networking side}, the article model Switches, NICs and transceivers with 10\% power proportionality, resulting in 90\% of the max power drawn idling, represented in blue in Figure \ref{fig:GraphPowProp}.
+A switch has a \qty{750}{\watt} maximum power resulting in \qty{675}{\watt} in idle power (90\% of the max power).
+This illustrates the issue of low power proportionality, as even when idling, due the lack of energy saving mechanism at low workload, switches consumes nearly the same power when working or idling.     
+The power draw of NICs and transceivers with respect to the considered bandwidth is featured in Table \ref{tab:PowNicTrans}, missing values are extrapolated linearly from the last available value.
+Again, as for the workload model, the linear extrapolation underestimates by overlooking overheads due to scaling.     
 
 \begin{table}[t]
 	\caption{Maximum power values for network components.}\label{tab:PowNicTrans}
@@ -131,12 +141,12 @@ Regarding the power drawn by each side during an iteration the following conside
 \end{table}
 
 To be able to calculate the overall power drawn, knowing the number of switches, NICs and transceivers is necessary.
-The number of switches in the model is calculated from formulas \cite{Demy} considering a fat-tree topology and is interpolated if the number of hosts is between what a certain number of stages (layers) could support. This interpolation isn't precisely disclosed and makes it really difficult to reproduce their results and find the same number of switches.
+The number of switches in the model is calculated from formulas \cite{Demy} considering a fat-tree topology and is interpolated if the number of hosts is between what a certain number of stages (layers) could support. This interpolation is not precisely disclosed and makes it really difficult to reproduce their results and find the same number of switches.
 The number of NICs correspond to the number of hosts, \textit{i.e.} 15k.
-The number of transceivers to consider isn't clear in the paper. It mentions that the transceivers between end hosts and top of rack switches are electrical which have a negligible impact on the power. Moreover, as calculating the number of switches is hard to reproduce, the number of transceivers for the connections between switches is also hard to reproduce.
+The number of transceivers to consider isn't clearly disclosed in the paper. It mentions that the transceivers between end hosts and top of rack switches are electrical which have a negligible impact on the power. Moreover, as calculating the number of switches is hard to reproduce, the number of transceivers for the connections between switches is also hard to reproduce.
 
 An attempt at reproducing the article's results on numbers of networks resources is presented in Table \ref{tab:PowAttempt}. 
-In this attempt is used the same formulas \cite{Demy} in addition to a visualiser \cite{fatTreeVis}. A clear problem of using those formulas is that it assumes an even distribution of upstream and downstream ports which isn't the case for the considered switches with 60 upstream and 128 downstream ports. The number of ports in this attempt is considered to be 188.  
+In this attempt, the same formulas \cite{Demy} are used in addition to a visualiser \cite{fatTreeVis}. A clear problem of using those formulas is that it assumes an even distribution of upstream and downstream ports which isn't the case for the considered switches with 60 upstream and 128 downstream ports. The number of ports in this attempt is considered to be 188.  
 The number of switches is interpolated linearly between the two found bounds of layers in which the number of hosts belong.
 \begin{definition}[linear interpolation]
 	Given $l$ and $u$ the lower and upper bound of layers such that\\
@@ -148,9 +158,10 @@ The number of switches is interpolated linearly between the two found bounds of 
 	$$ S_{tot} = \frac{H - H_l}{H_u - H_l} \times (S_u - S_l) + S_l$$
 	
 \end{definition}
+The linear interpolation is a considerable oversimplification, as networking infrastructures scales in discrete steeps.
 
 For example, for the 400Gbps case (the Alibaba's pod), the 15 000 hosts have to be connected with 2 links, as the switches use 200G downstream ports. 
-For the calculation, 30K hosts are then considered resulting in $u = 3$, $l = 2$ as $H_u = 1,882,384$ and $H_l = 19,208$. This leads to $S_u = 48,020$ and $S_l = 294$ giving $S_{tot} = 570.44$ rounded to $S_{tot} = 571$.
+For the calculation, due to the necessity to double the links at each host, 30K hosts are considered resulting in $u = 3$, $l = 2$ as $H_u = 1,882,384$ and $H_l = 19,208$. This leads to $S_u = 48,020$ and $S_l = 294$ giving $S_{tot} = 570.44$ rounded to $S_{tot} = 571$.
 The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by $T_u$ and $T_l$ the lower and upper number of transceivers between switches.
 
 \begin{table}[t]
@@ -212,15 +223,19 @@ The power footprint of the network and the compute for the examined ML cluster c
 In comparison, the attempt at reproducing the article's results is presented in Figure \ref{fig:ownPowFootprint}. 
 The main difference is the number of switches making the number of transceivers explode in the attempt.
 
-Though, both results share similar results:
+Nevertheless, both results share similar results:
 As expected, compute has the larger footprint during the computation phase.
 However, an interesting observation is to be made regarding the network power footprint in absolute terms (Fig. \ref{fig:PowAbs}) which is computed from the article.
-Due to the low power proportionality of the network, its footprint stays relatively constant across both phases. 
-Moreover, as the network is idling 90\% of the time, its efficiency computed as $\frac{\textnormal{usefull power}}{\textnormal{total power}}$ reach as low as 11\%.
+Due to the low power proportionality of the network, its footprint stays relatively constant across both phases, \textit{i.e.} the absolute power draw is only slightly reduced when idling. 
+Moreover, its efficiency computed as $\frac{\textnormal{useful power}}{\textnormal{total power}}$ reaches as low as 11\%.
+This is due to the combination of the low power proportionality making the network waste considerable amount of power while idling and its high idling ratio (90\%).
 Adding the fact that the network power footprint is around, on average, 12\%, the question of increasing the network power proportionality is relevant to explore.  
+In the attempt, due to the transceiver's explosion, the network average power footprint reaches 14\%.
 
-Investigating the power savings resulting from an increase in network power proportionality the article \cite{NetPowProp} finds interesting results.
+Investigating the power savings resulting from an increase in network power proportionality the article \cite{NetPowProp} finds interesting results.\\
 At the considered bandwidth of the cluster, with 50\% (resp. 85\%) power proportionality the power savings would be around 5\% (resp. 9\%) of the total cluster power.
+Those results are significant, as even 5\% at the scale of the total cluster's power is a considerable amount of power.
+
 
 \begin{figure}[ht]
 		\centering
@@ -268,7 +283,7 @@ At the considered bandwidth of the cluster, with 50\% (resp. 85\%) power proport
 \donutchart[rotate=90]{52.6/Fuchsia/GPU and Servers, 13.5/Turquoise/Switchs, 16.1/BrickRed/Transceivers, 17.8/ForestGreen/NICs}{\qty{2.1}{\mega\watt}}
 		\caption{Communication phase}
 	\end{subfigure}
-	\caption{Power footprint of the examined ML cluster calculated by the article.}\label{fig:PowFootprint}
+	\caption{Power footprint of the as calculated by the authors.}\label{fig:PowFootprint}
 \end{figure}
 
 \begin{figure}[H]
@@ -329,18 +344,18 @@ Thus, finding a balance between secrecy and modularity should be addressed to en
 
 \textbf{Static Opt.2: Scheduling network jobs}
 \\\textit{From computing hardware} : In ML clusters, job schedulers enable traffic to be directed to a restrained set of servers to free other servers from running at full pace or completely.   
-\\\textit{To computing hardware} : Similar mechanism could be introduced by using Optical Circuit Switches (OCSs). Such switches avoid the optical - electrical - optical conversion and works directly with optical signals. 
+\\\textit{To computing hardware} : Similar mechanism could be introduced by using Optical Circuit Switches (OCSs). Such switches avoid the optical - electrical - optical conversion and work directly with optical signals. 
 As those switches use (physical) mirrors, their reconfiguration speed is slow.
-Though in the case of an ML cluster, reconfigurations follow the ML training job which may last for hours or days.
+Nevertheless, in the case of an ML cluster, reconfigurations follow the ML training job which may last for hours or days.
 This permits the use of OCS in such environment. 
 \\\textit{Challenges} : The placement of such OCS in the cluster topology could leverage the cluster's job schedules.
 Though the number and placement of those switches is an interesting question with an underlying trade-off between energy savings and reaction time. 
 
 
 \textbf{Dynamic Opt.1: Rate adaptation}
-\\\textit{From computing hardware} : A classic rate adaptation implementation is the dynamic voltage and frequency scaling (DVFS), which can reduces the clock speed of cores depending on the load. 
+\\\textit{From computing hardware} : A classic rate adaptation implementation is the dynamic voltage and frequency scaling (DVFS), which can reduce the clock speed of cores depending on the load.
 \\\textit{To networking hardware} : DVFS can be applied in a router's control plane, but wouldn't save much energy as it only consumes a fraction of the router's power footprint.
-However, applying such concept to the data plane by, for example, reducing the ASIC's clock frequency or turning of an interface's SerDes component.  Moreover, it could also be applied to network interface cards and transceivers as their power footprint share isn't negligible.
+However, applying such concept to the data plane by, for example, reducing the ASIC's clock frequency or turning of an interface's serdes component.  Moreover, it could also be applied to network interface cards and transceivers as their power footprint share isn't negligible.
 \\\textit{Challenges} : Rate adaptation of the ASIC's clock isn't perfect as it would require ASIC's pipelines to be independent.
 Though, this would need an ASIC redesign which is a substantial change. 
 
@@ -348,14 +363,13 @@ Though, this would need an ASIC redesign which is a substantial change.
 \textbf{Dynamic Opt.2: Turning off pipelines}
 \\\textit{From computing hardware} : Depending on the load, CPUs are capable of turning of some of their cores. 
 \\\textit{To networking hardware} : Turning of pipelines, which are the physical unit in charge of packet arrival and departure, would significantly reduce power footprint. 
-\\\textit{Challenges} : In actual ASICs, pipelines are tight to a subset of ports. Which makes turning of entire pipelines more complex, as it would simply turn of all the ports its tight to.
+\\\textit{Challenges} : In actual ASICs, pipelines are tied to a subset of ports. Which makes turning of entire pipelines more complex, as it would simply turn of all the ports it's tied to.
 A solution could be to introduce an (optical) circuit switch in front of a switch's ports to map packets arrival in the active pipelines.
 Though a possible solution, it introduces latency in the system as the circuit switch might not consume much but would need buffering which induces the decoding and re-encoding of the packet, consuming energy.
 
 \subsection{Conclusion}
-In conclusion, the paper highlights the importance of the network power footprint and argues the need to increase its power proportionality.
-To support their position, the transposition of mechanisms from the computing to the networking hardware is explored. 
-
-
+% In conclusion, the authors highlight the importance of the network power footprint and argues the need to increase its power proportionality.
+% To support their position, the transposition of mechanisms from the computing to the networking hardware is explored. 
+\todo[inline]{highlight the importance of network prop and my attempt as well as the proposed solutions}
 
 
