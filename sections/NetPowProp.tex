@@ -97,7 +97,8 @@ Both phases are considered independent, the transition between them is instantan
 During the computation phase, GPUs are consuming maximum power whereas the network is idle and vice-versa.  
 The workload of the cluster is modeled with a 10\% \textit{communication ratio}.
 \begin{definition}[communication ratio]\label{def:comRatio}
-	The \textit{communication ratio} is the time proportion of the communication phase in an iteration. Given $Cm$ (resp. $Cp$) the time of the communication (resp. computation) phase, the communication is given by :
+is the time proportion of the communication phase in an iteration.
+Given $Cm$ (resp. $Cp$) the time of the communication (resp. computation) phase, the communication is given by :
 	$$ R = \frac{Cm+Cp}{Cm}$$
 \end{definition}
 Finally, the workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two.
@@ -171,9 +172,9 @@ The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by 
 			\toprule
 			Bandwidth(Gbps) & 100 & 200 & 400 & 800 & 1600 \\
 			\hline
-			number of switches & 239 & 239 & 571 & 1339 & 2876 \\ 
+			 switches & 239 & 239 & 571 & 1339 & 2876 \\ 
 			\hline
-			number of transceivers & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
+			 transceivers & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
 			\bottomrule
 		\end{tabular}
 \end{table}
@@ -239,94 +240,85 @@ Those results are significant, as even 5\% at the scale of the total cluster's p
 
 \begin{figure}[ht]
 		\centering
-		\includegraphics[width=0.95\textwidth]{figures/PowerFootPrintComp.png}
+		\includegraphics[width=0.95\columnwidth]{figures/PowerFootPrintComp.png}
 	\caption{Power footprint with an iteration standpoint and efficiency perspective.}\label{fig:PowAbs}
 \end{figure}
 
 
 \newpage
-\begin{figure}[ht]
+\begin{figure*}[ht]
 	\centering
 
-	\begin{subfigure}[t]{\textwidth}
+	\subfloat{
 		\centering
 
-	\begin{tikzpicture}[
-    square/.style={minimum size=0.6cm, inner sep=0pt},
-	label_text/.style={font=\sffamily\Large, anchor=west, xshift=0.3cm}]
-    % --- First Column ---
-    \node[square, fill=Fuchsia] (s1) {};
-    \node[label_text] at (s1.east) {GPU and Servers};
-    \node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
-    \node[label_text] at (s2.east) {Transceivers};
+		\begin{tikzpicture}[
+			square/.style={minimum size=0.6cm, inner sep=0pt},
+			label_text/.style={font=\sffamily\Large, anchor=west, xshift=0.3cm}]
+			% --- First Column ---
+			\node[square, fill=Fuchsia] (s1) {};
+			\node[label_text] at (s1.east) {GPU and Servers};
+			\node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
+			\node[label_text] at (s2.east) {Transceivers};
 
-    % --- Second Column ---
-    % Positioned 4cm to the right of the first column
-    \node[square, fill=ForestGreen, right=6cm of s1] (s3) {};
-    \node[label_text] at (s3.east) {NICs};
+			% --- Second Column ---
+			% Positioned 4cm to the right of the first column
+			\node[square, fill=ForestGreen, right=6cm of s1] (s3) {};
+			\node[label_text] at (s3.east) {NICs};
 
-    \node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
-    \node[label_text] at (s4.east) {Switches};
-
-\end{tikzpicture}	
+			\node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
+			\node[label_text] at (s4.east) {Switches};
 
 
-	\end{subfigure}
+		\end{tikzpicture}	
+	}
+	\hfil
 
-	\begin{subfigure}[b]{0.48\textwidth}
+	\subfloat[Computation phase]{
 		\centering
-\donutchart[rotate=90]{89.1/Fuchsia/GPU and Servers, 3.1/Turquoise/Switchs, 3.7/BrickRed/Transceivers, 4.1/ForestGreen/NICs}{\qty{8.4}{\mega\watt}}
-		\caption{Computation phase}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.48\textwidth}
+		\donutchart[rotate=90]{89.1/Fuchsia/GPU and Servers, 3.1/Turquoise/Switchs, 3.7/BrickRed/Transceivers, 4.1/ForestGreen/NICs}{\qty{8.4}{\mega\watt}}
+	}
+	\subfloat[Communication phase]{
 		\centering
-\donutchart[rotate=90]{52.6/Fuchsia/GPU and Servers, 13.5/Turquoise/Switchs, 16.1/BrickRed/Transceivers, 17.8/ForestGreen/NICs}{\qty{2.1}{\mega\watt}}
-		\caption{Communication phase}
-	\end{subfigure}
+		\donutchart[rotate=90]{52.6/Fuchsia/GPU and Servers, 13.5/Turquoise/Switchs, 16.1/BrickRed/Transceivers, 17.8/ForestGreen/NICs}{\qty{2.1}{\mega\watt}}
+	}
 	\caption{Power footprint of the as calculated by the authors.}\label{fig:PowFootprint}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[H]
+% my attempt at it
+\begin{figure*}[ht]
 	\centering
-
-	\begin{subfigure}[t]{\textwidth}
+	\subfloat{
 		\centering
+		\begin{tikzpicture}[
+			square/.style={minimum size=0.6cm, inner sep=0pt},
+			label_text/.style={font=\sffamily\Large, anchor=west, xshift=0.3cm}]
+			% --- First Column ---
+			\node[square, fill=Fuchsia] (s1) {};
+			\node[label_text] at (s1.east) {GPU and Servers};
+			\node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
+			\node[label_text] at (s2.east) {Transceivers};
 
-	\begin{tikzpicture}[
-    square/.style={minimum size=0.6cm, inner sep=0pt},
-	label_text/.style={font=\sffamily\Large, anchor=west, xshift=0.3cm}]
-    % --- First Column ---
-    \node[square, fill=Fuchsia] (s1) {};
-    \node[label_text] at (s1.east) {GPU and Servers};
-    \node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
-    \node[label_text] at (s2.east) {Transceivers};
+			% --- Second Column ---
+			% Positioned 4cm to the right of the first column
+			\node[square, fill=ForestGreen, right=6cm of s1] (s3) {};
+			\node[label_text] at (s3.east) {NICs};
 
-    % --- Second Column ---
-    % Positioned 4cm to the right of the first column
-    \node[square, fill=ForestGreen, right=6cm of s1] (s3) {};
-    \node[label_text] at (s3.east) {NICs};
+			\node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
+			\node[label_text] at (s4.east) {Switches};
+		\end{tikzpicture}	
+	}
 
-    \node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
-    \node[label_text] at (s4.east) {Switches};
-
-
-\end{tikzpicture}	
-
-
-	\end{subfigure}
-
-	\begin{subfigure}[b]{0.48\textwidth}
+	\subfloat[Computation phase]{
 		\centering
-\donutchart[rotate=90]{84.3/Fuchsia/GPU and Servers, 4.3/Turquoise/Switchs, 3.8/BrickRed/Transceivers, 8.6/ForestGreen/NICs}{\qty{8.9}{\mega\watt}}
-		\caption{Computation phase}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.48\textwidth}
+		\donutchart[rotate=90]{84.3/Fuchsia/GPU and Servers, 4.3/Turquoise/Switchs, 3.8/BrickRed/Transceivers, 8.6/ForestGreen/NICs}{\qty{8.9}{\mega\watt}}
+	}
+	\subfloat[Communication phase]{
 		\centering
-\donutchart[rotate=90]{40.4/Fuchsia/GPU and Servers, 15.4/Turquoise/Switchs, 30.5/BrickRed/Transceivers, 13.7/ForestGreen/NICs}{\qty{2.8}{\mega\watt}}
-		\caption{Communication phase}
-	\end{subfigure}
+		\donutchart[rotate=90]{40.4/Fuchsia/GPU and Servers, 15.4/Turquoise/Switchs, 30.5/BrickRed/Transceivers, 13.7/ForestGreen/NICs}{\qty{2.8}{\mega\watt}}
+	}
 	\caption{Calculated Attempt at power footprint of the examined ML cluster.}\label{fig:ownPowFootprint}
-\end{figure}
+\end{figure*}
 
 
 \subsection{Increasing power proportionality in the network}\label{sec:PowSol}
