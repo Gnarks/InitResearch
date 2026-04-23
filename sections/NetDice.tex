@@ -4,7 +4,7 @@
 In this section, we explore the reasoning and implementation behind NetDice \cite{steffen2020netdice}, a probabilistic verification tool for networks configuration. 
 
 
-\begin{table}
+\begin{table*}
   \caption{Properties supported by NetDice}\label{tab:props}
   \begin{center}
     \begin{tabularx}{\textwidth}{c l X}
@@ -24,7 +24,7 @@ In this section, we explore the reasoning and implementation behind NetDice \cit
       & $Congestion_{F}(l, t)$ & Together, all flows in $F$ with their volume don't exceed threshold $t$ for link $l$ \\
     \end{tabularx}
   \end{center}
-\end{table}
+\end{table*}
 It is able to verify properties on flows with respect to certain nodes or links in a network.
 A flow in the context of internet routing is generally defined by a source/destination IP address, port numbers and a transport protocol. 
 We use a simplification considering the source and destination IP addresses only.
@@ -78,7 +78,6 @@ As the shortest path is considered by $u$, any failure in this shortest path wil
 as those static routes deviate the forwarding graph and the end-node considers the shortest path just as $u$ initially.
 Finally, every edge on traversed static route is added as hot (Lin.5), as a failure would clearly change the forwarding behavior.
 
-% todo explain its due to RIP that we consider sp at nodes 
 
 
 \begin{algorithm}[H]
@@ -102,9 +101,9 @@ Finally, every edge on traversed static route is added as hot (Lin.5), as a fail
 As an example, Figure \ref{fig:cold} represents the application of Alg \ref{alg:cold} giving the hot and cold edges of a certain network configuration considering no failure and a flow (D, C), the forwarding edges $E_{fwd} = \{(D,E),(E,B),(B,C)\}$ and the static routes towards $C$ $Static_C = \{(E,B)\}$.
 Note that the $(E,C)$ edge is marked as hot even though it is not in the forwarding graph because it lies on the shortest path of D. If it fails, the decision of D would be to use $D\rightarrow A\rightarrow B\rightarrow C$ as its shortest path, changing the forwarding graph.  
 
-\begin{figure}[ht]
+\begin{figure}[t]
 	\centering
-	\begin{subfigure}[t]{0.8\textwidth}
+	\subfloat{
 		\centering
 		\begin{tabular}[l]{l l}
 			\multicolumn{2}{c}{\underline{Application of Alg \ref{alg:cold}}}\\
@@ -112,14 +111,14 @@ Note that the $(E,C)$ edge is marked as hot even though it is not in the forward
 			3: & $\mathcal{S} = \{B\}$ \\
 			4: & $\mathcal{H} = \mathcal{H} \cup \{(B,C)\}$ \\
 			5: & returns $\mathcal{H} = \mathcal{H} \cup \{(E,B)\}$\\
-			5: & returns $\mathcal{H} = \{(D,E),(E,C),(E,B),(B,C)\} $\\
+			5: &  $\mathcal{H} = \{(D,E),(E,C),(E,B),(B,C)\}$\\
 		\end{tabular}
-	\end{subfigure}
-
-	\begin{subfigure}[b]{0.8\textwidth}
+	}
+	\vfil
+	\subfloat{
 		\centering
-		\includegraphics[width=1\textwidth]{figures/ColdStatic.png}
-	\end{subfigure}
+		\includegraphics[width=0.97\columnwidth]{figures/ColdStatic.png}
+		}
 		\caption{This example is from NetDice's article \cite{steffen2020netdice} it represents cold edges in a network configuration with no failures (i.e. all links up) and a flow (D, C). $(E,B)$ is a static route. Blue and red highlight show cold and hot edges respectively. The forwarding graph is represented by the red arrows.}\label{fig:cold}
 \end{figure}
 
@@ -158,14 +157,14 @@ A similar situation happens in the very last recursive call (B ${-}\mkern-11mu{/
 In the example, only 16 failure scenarios are explored. In contrast to the $2^7 = 128$  scenarios a Brute Force algorithm would have had to explore.
 
 
-% TODO add E C to H plus add the numbers 
-\begin{figure}[p]
+\begin{figure*}[p]
+	\centering
+	\subfloat{
 		\centering
-	\begin{subfigure}[t]{0.85\textwidth}
-		\centering
-    \includegraphics[angle=90,width=0.95\textwidth]{figures/ExplorationWithoutBGP.pdf}
-	\end{subfigure}
-	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[angle=90,width=0.95\textwidth]{figures/ExplorationWithoutBGP.pdf}
+	}
+	\hfil
+	\subfloat{
 		\centering
 		\begin{tabular}[l]{l c l}
 			\multicolumn{3}{c}{\underline{P($\phi$) with independent probability of link failure p=0.1, $\tilde{p} = 1-p$}}\\
@@ -184,9 +183,9 @@ In the example, only 16 failure scenarios are explored. In contrast to the $2^7 
 			\hline
 			\multicolumn{3}{l}{\textbf{P($\phi$)} $\approx$ 0.897561}\\
 		\end{tabular}
-	\end{subfigure}
+	}
   \caption{Exploration of failure space and computation of the probability with $\phi =$ "Traffic from D to C traverses E". Crosses represent down links, padlocks represent up links and green arrow represent the forwarding graph. Absence of symbol represent undefined links. "Cold" in blue represent scenarios containing only cold edges.}\label{fig:execTree}
-\end{figure}
+\end{figure*}
 
 \subsection{Incorporating BGP} \label{sec:IncBGP}
 
@@ -258,12 +257,11 @@ In line 8, we have that C (and E) is added to $D_{\text{NH}}$ as  (B, C) lies on
 Lines 9 to 10 marks hot the edges along the shortest path of C towards E, adding ${(C,V), (V,E)}$ to the set of hot edges.
 The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(iib) and (iia) resulting in $\mathcal{H} = {(V,E), (V,W), (W,A), (C,V), (C,F), (B,C), (F,W)}$ represented in Figure \ref{fig:hotbgp} (iii)
 
-\begin{figure}[H]
-  \begin{center}
+\begin{figure*}[t]
+	\centering
     \includegraphics[trim=4cm 0cm 0 0,clip, angle=90,width=0.95\textwidth]{figures/HotBgp.pdf}
-  \end{center}
 	\caption{Computation of hot edges in a BGP capable network configuration.  The flow is $(B,d)$ with d the external BGP destination, LP represents the local preference of the announcements towards d. $B_R = {E,A,C}$, $R_R = {V,W}$ represented in purple, the selected next-hop is represented in green at each node. Hot edges are highlighted in red.}\label{fig:hotbgp}
-\end{figure}
+\end{figure*}
 
 \begin{algorithm}[H]
   \floatname{algorithm}{Algorithm}
@@ -314,7 +312,8 @@ Figure \ref{fig:BN} represents a simple network configuration with a BN modeling
 Assuming the probability of a node (resp. link) failure is 0.1 (resp. 0.01), it is possible to compute $P(L = l)$ for a certain failure scenario l. 
 For example to compute $P(L_{A-B} = 1, L_{B-C} = 0)$ the decomposition is the following.
 First, both the A and B  nodes must be 1, otherwise, their shared link would be down. As node failures are independent, we consider :
-\[P(A = 1) \times P(B = 1) \times P(L_{A-B} = 1 ~| ~A=1,B=1) = 0.9^2 \times 0.99\] 
+\[P(A = 1) \times P(B = 1) \times P(L_{A-B} = 1 | A=1,B=1) \] 
+\[= 0.9^2 \times 0.99 \]
 
 Then 2 scenarios are possible, either C is up or down.
 
@@ -331,20 +330,22 @@ Finally, taking the product of the sum and the marginals gives
 
 To compute $P(L)$ and its marginals efficiently, NetDice uses the algorithm of variable elimination \cite{VE}.
 
+\todo[inline]{put the correct names}
 \begin{figure}
-	\begin{subfigure}[l]{0.35\textwidth}
+	\subfloat{
 		\centering
 		\begin{tikzpicture}[auto, on grid, thick, state/.style={circle, draw=black, minimum width = 1cm}]
-			\matrix [ column sep=0.6cm , row sep=1cm ]
+			\matrix [ column sep=0.5cm , row sep=1cm, ampersand replacement=\&] 
 			 {
-				 & \node[state](A) {A}; & \\
-				\node[state](B) {B}; & & \node[state](C) {C};\\
+				 \& \node[state](A) {A}; \& \\
+				\node[state](B) {B}; \& \& \node[state](C) {C};\\
 			 };
 			 \path(A) edge node {} (B);
 			\path(A) edge node {} (C);
 		 \end{tikzpicture}
-	\end{subfigure}
-	\begin{subfigure}[r]{0.6\textwidth}
+	 }
+	\vfil
+	\subfloat{
 		\centering
 		\begin{tikzpicture}[-latex , auto,  on grid, semithick, state/.style={circle, fill=blue!20, draw=black}]
 			\begin{scope}[node distance=2.5cm]
@@ -357,9 +358,8 @@ To compute $P(L)$ and its marginals efficiently, NetDice uses the algorithm of v
 			\path(C) edge [bend left=10] node {} (BC);
 			\end{scope}
 		 \end{tikzpicture}
-	\end{subfigure}
-
-	\caption{On the left, a simple network configuration composed of 3 routers. On the right the Bayesian network modeling node and link failure for the configuration.}\label{fig:BN}
+	 }
+	\caption{On the top is a simple network configuration composed of 3 routers. On the bottom lies the Bayesian network modeling node and link failure for the configuration.}\label{fig:BN}
 \end{figure}
 
 
@@ -371,7 +371,7 @@ Two algorithms are used by the algorithm.
 \begin{definition}$\textnormal{Scenario}(s)$ returns the corresponding failure scenario of the state $s$ by setting every undefined link to be up.
 \end{definition}
 
-\begin{definition}$\textnormal{Check}(\phi,(V^1_{fwd},E^1_{fwd}), \dots ,(V^n_{fwd},E^n_{fwd}))$
+\begin{definition}$\textnormal{Check}(\phi~,~(V^1_{fwd},E^1_{fwd}),\dots,(V^n_{fwd},E^n_{fwd}))$
 	returns, given a property and forwarding graphs, if the property holds in every forwarding 
 \end{definition}
 
@@ -383,7 +383,7 @@ Two algorithms are used by the algorithm.
 		\State $l \leftarrow \textnormal{Scenario}(s)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
 
     \For{each flow $(u_i, d_i) \in flows(\phi)$}  
-    \State compute forwarding graph ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under $l$
+	\State compute ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under $l$ \Comment{forwarding graph}
 
 		\State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ HotBGP(u_i,d_i, E^i_{fwd}, l)$ \Comment{Alg \ref{alg.hotbgp}}
     \EndFor

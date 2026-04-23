@@ -35,6 +35,7 @@ g}
 % tikz library
 \usetikzlibrary{positioning} % relative positioning 
 \usetikzlibrary{backgrounds} % coloring an area
+\usetikzlibrary{matrix} % matrix positioning
 
 \usepackage{hyphenat} % concatenates hyphenated words to a single one e.g. well-known 
 \usepackage{siunitx} % adds the \qty{n}{unit} and \unit{unit} commands
@@ -60,6 +61,54 @@ g}
 
 
 \begin{document}
+
+{
+\let\clearpage\relax
+
+\hbadness 10000
+\begin{titlepage}
+\begin{minipage}[t]{0.45\textwidth}
+		\begin{flushleft}
+			{\Large University of Mons}\\[1ex]
+			{\Large Sciences Faculty}\\[1ex]
+			{\Large Computer Science Department}\\[2.5cm]
+		\end{flushleft}
+	\end{minipage}
+	\begin{minipage}[t]{0.45\textwidth}
+		\begin{flushright}
+			\includegraphics[height=1.5cm]{figures/logoumons.jpg}
+			\\
+			\vspace{1cm}
+			\includegraphics[height=1.5cm]{figures/logofs.jpg}
+		\end{flushright}
+	\end{minipage}
+{\large Academic Year 2025-2026}
+
+% Title
+\centering
+\rule{\linewidth}{0.3mm} \\[0.3cm]
+{ \LARGE \bfseries Research initiation \\[0.3cm]}
+{ \LARGE \bfseries Report\\[0.1cm]}
+\rule{\linewidth}{0.3mm} \\[1.5cm]
+
+% Author and supervisor
+\begin{minipage}[t]{0.45\textwidth}
+\begin{flushleft} \large
+\emph{Author :} \\
+Maxime \textsc{Bartha}\\
+\end{flushleft}
+\end{minipage}
+\begin{minipage}[t]{0.45\textwidth}
+\begin{flushright} \large
+\emph{Supervisor :}\\
+Bruno \textsc{Quoitin}\\[3mm]
+\end{flushright}
+\end{minipage}\\[2ex]
+\end{titlepage}
+}
+\vspace{1.5cm}
+
+
 % ================================= article style frontpage
 % \begin{titlepage}
 % \begin{center}
@@ -110,11 +159,10 @@ g}
 \section{Intro}\label{sec:intro} % (fold)
 \todo[inline]{Introduce each article and the choice of analysing them (towards green networking and research ?)} 
 
-% \include{sections/NetDice}
+\include{sections/NetDice}
 
 \include{sections/NetPowProp}
 
-\newpage
 
 
 {
