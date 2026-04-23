@@ -1,4 +1,22 @@
-\documentclass[a4paper, 12pt]{article}
+% ===================================
+% IEEE conference style
+\documentclass[conference]{IEEEtran} % IEEE conference style
+\IEEEoverridecommandlockouts
+\ifCLASSOPTIONcompsoc
+\usepackage[caption=false,font=normalsize,labelfon
+t=sf,textfont=sf]{subfig}
+\else
+\usepackage[caption=false,font=footnotesize]{subfi
+g}
+\fi
+% ===================================
+% ===================================
+% basic latex article style
+% \usepackage[toc,page]{appendix} % appendix aren't defined in basic article syle 
+% \documentclass[a4paper, 12pt]{article} % basic latex article style
+% \usepackage{caption} % adds the subfigures
+% \usepackage{subcaption} % adds the subfigures
+% ===================================
 \usepackage[english]{babel} % defines the language
 \usepackage[pdftex]{graphicx} % figures
 \usepackage[pdftex,dvipsnames]{xcolor}  % Coloured text etc.
@@ -14,33 +32,25 @@
 \addbibresource{Citations.bib} %Import the bibliography file
 \usepackage{amssymb} % math fonts 
 \usepackage{tikz} % tikz  
-\usepackage{ifthen}
-\usetikzlibrary{positioning} % tikz library
-\usetikzlibrary{backgrounds}
+% tikz library
+\usetikzlibrary{positioning} % relative positioning 
+\usetikzlibrary{backgrounds} % coloring an area
 
-\usepackage{caption} % adds the caption command
-\usepackage{subcaption} % adds the subfigures
 \usepackage{hyphenat} % concatenates hyphenated words to a single one e.g. well-known 
 \usepackage{siunitx} % adds the \qty{n}{unit} and \unit{unit} commands
 \usepackage{changepage} % for the adjustwidth environment
-\usepackage[toc,page]{appendix}
 \usepackage[inkscapelatex=true]{svg} % to include svgs in figures with \includesvg 
-\usepackage{tabularx} % a cleaner tabular with X parameter  
-\usepackage{multirow}
-\usepackage{booktabs}
-\usepackage{enumerate}
-\usepackage{ifthen}
+\usepackage{tabularx} % a cleaner tabular with X parameter more modular  
+\usepackage{multirow} % \multicolums
+\usepackage{booktabs} % toprules and bottomrules in tables
+\usepackage{enumerate} % enumerate env
 \newtheorem{definition}{Definition} % to have definition environment
 
-\setlength {\marginparwidth }{2cm}
-\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
-\usepackage{xargs}
-\renewcommand{\arraystretch}{1.4}
+\setlength {\marginparwidth }{2cm} % for the todonotes
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes} % todo notes inline or not
+\usepackage{xargs} % abling new command creation
+\renewcommand{\arraystretch}{1.4} % add v space in tables
 
-\hfuzz 45pt
-\vfuzz 50pt
-\vbadness 500
-\hbadness 500
 % \newenvironment{tab}{\begin{adjustwidth}{1cm}{1cm} \itshape }{ \end{adjustwidth}}
 \newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
 \newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
@@ -48,57 +58,57 @@
 \newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
 \newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
 
-% for tikz graphics
-\definecolor{lavander}{cmyk}{0 ,0.48 ,0 ,0}
 
 \begin{document}
-\begin{titlepage}
-\begin{center}
-{\Large University of Mons}\\[1ex]
-{\Large Sciences Faculty}\\[1ex]
-{\Large Computer Science Department}\\[2.5cm]
-\newcommand{\HRule}{\rule{\linewidth}{0.3mm}}
-% Title
-\HRule \\[0.3cm]
-{ \LARGE \bfseries Research initiation \\[0.3cm]}
-{ \LARGE \bfseries Report \\[0.1cm]} 
-\HRule \\[1.5cm]
-
-% Author and supervisor
-\begin{minipage}[t]{0.45\textwidth}
-\begin{flushleft} \large
-\emph{Author :} \\
-Maxime \textsc{Bartha}\\
-\end{flushleft}
-\end{minipage}
-\begin{minipage}[t]{0.45\textwidth}
-\begin{flushright} \large
-\emph{Supervisor :}\\
-Bruno \textsc{Quoitin}\\[3mm]
-\end{flushright}
-\end{minipage}\\[2ex]
-
-\vfill
-
-% Bottom of the page
-\begin{center}
-\begin{tabular}[t]{c c c}
-\includegraphics[height=1.5cm]{figures/logoumons.jpg} &
-\hspace{0.3cm} &
-\includegraphics[height=1.5cm]{figures/logofs.jpg}
-\end{tabular}
-\end{center}~\\
- 
-{\large Academic Year 2025-2026}
-
-\end{center}
-\end{titlepage}
-
-\tableofcontents
-\newpage
+% ================================= article style frontpage
+% \begin{titlepage}
+% \begin{center}
+% {\Large University of Mons}\\[1ex]
+% {\Large Sciences Faculty}\\[1ex]
+% {\Large Computer Science Department}\\[2.5cm]
+% \newcommand{\HRule}{\rule{\linewidth}{0.3mm}}
+% % Title
+% \HRule \\[0.3cm]
+% { \LARGE \bfseries Research initiation \\[0.3cm]}
+% { \LARGE \bfseries Report \\[0.1cm]} 
+% \HRule \\[1.5cm]
+%
+% % Author and supervisor
+% \begin{minipage}[t]{0.45\textwidth}
+% \begin{flushleft} \large
+% \emph{Author :} \\
+% Maxime \textsc{Bartha}\\
+% \end{flushleft}
+% \end{minipage}
+% \begin{minipage}[t]{0.45\textwidth}
+% \begin{flushright} \large
+% \emph{Supervisor :}\\
+% Bruno \textsc{Quoitin}\\[3mm]
+% \end{flushright}
+% \end{minipage}\\[2ex]
+%
+% \vfill
+%
+% % Bottom of the page
+% \begin{center}
+% \begin{tabular}[t]{c c c}
+% \includegraphics[height=1.5cm]{figures/logoumons.jpg} &
+% \hspace{0.3cm} &
+% \includegraphics[height=1.5cm]{figures/logofs.jpg}
+% \end{tabular}
+% \end{center}~\\
+%
+% {\large Academic Year 2025-2026}
+%
+% \end{center}
+% \end{titlepage}
+%
+% \tableofcontents
+% \newpage
+% ================================= article style frontpage
 
 \section{Intro}\label{sec:intro} % (fold)
-\todo[inline]{introduce each article and the choice of analysing them (towards green networking and research ?)} 
+\todo[inline]{Introduce each article and the choice of analysing them (towards green networking and research ?)} 
 
 % \include{sections/NetDice}
 
@@ -107,7 +117,10 @@ Bruno \textsc{Quoitin}\\[3mm]
 \newpage
 
 
+{
+\hfuzz 50pt 
+\hbadness 10000 
 \printbibliography
-
+}
 
 \end{document}
