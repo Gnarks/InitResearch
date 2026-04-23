@@ -66,12 +66,12 @@ text color=white}
 \section{It Is Time to Address Network Power Proportionality}
 \subsection{Introduction}
 In recent years, due to the growth in data centers and machine learning clusters traffic, networking hardware has prioritized throughput and performance.
-This trend led manufacturers to overlook the power efficiency of their devices at the cost of their energy to load efficiency.
+This trend led manufacturers to overlook the power efficiency of their devices at the cost of their power-to-load efficiency.
 
-The metric used to track this energy consumption to load efficiency is power proportionality. 
+The metric used to track this power consumption to load efficiency is power proportionality. 
 An ideal power proportional device would consume power in direct proportion to the work performed. 
 In opposite, a non-power proportional device would consume power near maximum regardless of the work performed. 
-It is distinct of the power efficiency, as it focuses on the relation between the power and the work whereas power efficiency focuses on the work done per power consumption.   
+It is distinct of the power efficiency, as it focuses on the relation between the power and the work, whereas power efficiency focuses on the work done per power consumption.
 
 On the contrary, computing hardware has gained more attention to its power proportionality and efficiency. It is primarily due to its larger power footprint globally, as computing hardware is abundant and its idling cost, especially in large scale deployments, should stay low.
 
@@ -79,7 +79,7 @@ In this section, we explore an article \cite{NetPowProp} addressing such network
 To this end, the article first tackles and models a concrete example of a machine learning cluster modeled in Section \ref{sec:PowMod}.
 This scenario is somewhat of a worst case scenario to argue for network power proportionality, as the computational power demand is subsequently larger than the networking one. 
 
-However, it is observed  (Section \ref{sec:impact}) that, mainly due to the combination of poor power proportionality and low time usage, the network accounts for an average of 12\% of the total power footprint in the cluster. Which implies that in less computationally heavy environments such as data centers the share of power consumption of the network should be a concern.   
+However, it is observed  (Section \ref{sec:impact}) that, mainly due to the combination of poor power proportionality and low time usage, the network accounts for an average of 12\% of the total power footprint in the cluster. Which implies that in less computationally heavy environments such as data centers, the share of power consumption of the network should be a concern.   
 
 Finally, Section \ref{sec:PowSol} explores possible improvements originating from already implemented power proportionality mechanisms from computing hardware by transposing them to networking hardware.
 
@@ -227,7 +227,7 @@ Nevertheless, both results share similar results:
 As expected, compute has the larger footprint during the computation phase.
 However, an interesting observation is to be made regarding the network power footprint in absolute terms (Fig. \ref{fig:PowAbs}) which is computed from the article.
 Due to the low power proportionality of the network, its footprint stays relatively constant across both phases, \textit{i.e.} the absolute power draw is only slightly reduced when idling. 
-Moreover, its efficiency computed as $\frac{\textnormal{useful power}}{\textnormal{total power}}$ reaches as low as 11\%.
+Moreover, its efficiency computed as $\frac{\textnormal{useful power}}{\textnormal{total power}}$ for an iteration reaches as low as 11\%.
 This is due to the combination of the low power proportionality making the network waste considerable amount of power while idling and its high idling ratio (90\%).
 Adding the fact that the network power footprint is around, on average, 12\%, the question of increasing the network power proportionality is relevant to explore.  
 In the attempt, due to the transceiver's explosion, the network average power footprint reaches 14\%.
@@ -368,8 +368,17 @@ A solution could be to introduce an (optical) circuit switch in front of a switc
 Though a possible solution, it introduces latency in the system as the circuit switch might not consume much but would need buffering which induces the decoding and re-encoding of the packet, consuming energy.
 
 \subsection{Conclusion}
-% In conclusion, the authors highlight the importance of the network power footprint and argues the need to increase its power proportionality.
-% To support their position, the transposition of mechanisms from the computing to the networking hardware is explored. 
-\todo[inline]{highlight the importance of network prop and my attempt as well as the proposed solutions}
+In this section, we focused on state-of-the-art networking hardware low proportionality in the context of a machine learning cluster. 
+Modeling the use of one pod of this cluster (Section \ref{sec:PowMod}) led to complication in the reproducibility of the authors results, due to the lack of transparency regarding topology interpolation.
+Those complications inspired an attempt to reproduce the article's results yielding higher total power consumption.
+
+The authors find that the network accounts for on average 12\% of the total cluster power consumption and argues that improving network power proportionality could lead from 5\% up to 9\% of power savings.
+In the attempt, the network accounts for on average 14\% leading to even higher power savings.
+The power efficiency found in the article, due to the poor power proportionality and high idling time, reaches an appallingly low 11\%.
+Those results represent, in the context of million-watts power consumption of the cluster, a considerable amount energy saved.
+
+In the context of green networking, such amounts represent non-negligible insights and should be a concern to investigate further. Especially in the case of machine learning clusters or data center due to their recent growth in number, large scale and low communication rate.  
+
+To investigate possible solutions, improvements regarding the power proportionality of network devices are explored from static and dynamic viewpoints by taking inspirations from the computing hardware strategies. Even though such improvements would likely require possible ASIC and software changes, as demonstrated by the modeling, they are worth investigating further and should interest network hardware manufacturers.  
 
 
