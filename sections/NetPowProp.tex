@@ -99,7 +99,7 @@ The workload of the cluster is modeled with a 10\% \textit{communication ratio}.
 \begin{definition}[communication ratio]\label{def:comRatio}
 is the time proportion of the communication phase in an iteration.
 Given $Cm$ (resp. $Cp$) the time of the communication (resp. computation) phase, the communication is given by :
-	$$ R = \frac{Cm+Cp}{Cm}$$
+	$$ R = \frac{Cm}{Cm+Cp}$$
 \end{definition}
 Finally, the workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two.
 
