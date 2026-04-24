@@ -380,35 +380,51 @@ To compute $P(L)$ and its marginals efficiently, NetDice uses the algorithm of v
 
 
 \subsection{Implementation}\label{sec:implementation}
-\todo[inline]{Better explain the algorithm nothing's said here}
-The following Section presents the NetDice's algorithm to compute the probability of a property given a network configuration. 
-The algorithm, presented in Alg \ref{alg:BGPExplo}, uses the notion of states in which a link can be up (1), down (0) or undefined (?). As previously stated, only the up and undefined links are considered traversable to check if the property holds. 
+The following Section presents the NetDice's algorithm to compute the probability of a property given a network configuration and a probability distribution. 
+The algorithm, presented in Alg \ref{alg:BGPExplo}, uses the notion of states in which a link can be up (1), down (0) or undefined (?).
+As previously stated, only the up and undefined links are considered traversable to check if the property holds. 
 
-Two algorithms are used by the algorithm.
-\begin{definition}$\textnormal{Scenario}(s)$ returns the corresponding failure scenario of the state $s$ by setting every undefined link to be up.
+Three functions are used by the algorithm.
+\begin{definition}{$\textnormal{Scenario}(s, T)$} returns the corresponding failure scenario of the state $s$ by setting every undefined link in the subset $T \subseteq E$ to be up.
 \end{definition}
 
 \begin{definition}$\textnormal{Check}(\phi~,~(V^1_{fwd},E^1_{fwd}),\dots,(V^n_{fwd},E^n_{fwd}))$
-	returns, given a property and forwarding graphs, if the property holds in every forwarding 
+	returns, given a property and a set of forwarding graphs, if the property holds in every forwarding graph.   
 \end{definition}
+
+\begin{definition}$\textnormal{Prob}(s)$
+	returns, given a scenario $s$ the marginal probability defined over the defined states (either up or down). 
+\begin{flalign}
+i.e. && P(\wedge_{e \in E ~ \textnormal{s.t. s(e) $\neq$ ?}} L_e = s(e) )&&\phantom{}
+\end{flalign}
+\end{definition}
+
+As mutli-flow properties are supported, the check function has to work on a set of forwarding graphs.  
+
+The algorithm initialises by computing a forwarding graph per flow in the property and computing its hot edges set (Lin. 3-5).
+Then the undefined hot edges, as the scenario with their failure should be explored, are computed (Lin. 6). 
+If the property is satisfied in every forwarding graph, the probability of the actual scenario is computed.
+To do so, the probability of the scenario with undefined links in the set of undefined hot edges set to 1 is computed (Lin. 7-8).
+Since, a failure in any of them will change the forwarding graph possibly changing if the property holds.  
+The exploration of the undefined hot edges is done in Lines 10 to 13 and algorithm returns the sum of the marginal probabilities of explored states where $\phi$ holds. 
 
 \begin{algorithm}[t]
   \floatname{algorithm}{Algorithm}
-  \caption{Failures exploration to compute $P(\phi)$}\label{alg:BGPExplo}
+  \caption{Computing $P(\phi)$}\label{alg:BGPExplo}
   \begin{algorithmic}[1]
     \Procedure{Explore}{s}
-		\State $l \leftarrow \textnormal{Scenario}(s)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
+		\State $l \leftarrow \textnormal{Scenario}(s, E)$, $\mathcal{H} \leftarrow \emptyset $, $\rho \leftarrow 0$
 
     \For{each flow $(u_i, d_i) \in flows(\phi)$}  
-	\State compute ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under $l$ \Comment{forwarding graph}
+	\State compute ($V^i_{fwd}$, $E^i_{fwd}$) for $(u_i, d_i)$ under $l$ 
 
-		\State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ HotBGP(u_i,d_i, E^i_{fwd}, l)$ \Comment{Alg \ref{alg.hotbgp}}
+	\State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ \textnormal{HotBGP}(u_i,d_i, E^i_{fwd}, l)$ \Comment{Alg \ref{alg.hotbgp}}
     \EndFor
 		\State $\mathcal{H}^? \leftarrow \mathcal{H} ~ \cap ~ \{ e  \in E ~ | e \text{ is undefined in } s\}$
 
 
     \If{Check($\phi$, $(V^1_{fwd},E^1_{fwd}), \dots ,(V^n_{fwd},E^n_{fwd})$)}
-      \State $\rho \leftarrow \rho + P(L = \mathcal{H}^?)$ 
+	\State $\rho \leftarrow  \textnormal{Prob}(\textnormal{Scenario}(s, \mathcal{H}^?))$ 
     \EndIf
     \State $s' \leftarrow s$ 
 
@@ -416,7 +432,7 @@ Two algorithms are used by the algorithm.
     \For{$e^? \in \mathcal{H}^?$}  
 		\State $\text{set } e^? \text{ as down in } s'$ 
 
-      \State $\rho \leftarrow \rho + Explore(s')$ 
+		\State $\rho \leftarrow \rho + \textnormal{Explore}(s')$ 
 		\State $\text{set } e^? \text{ as up in } s'$ 
     \EndFor
 
