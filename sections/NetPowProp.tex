@@ -104,7 +104,7 @@ Given $Cm$ (resp. $Cp$) the time of the communication (resp. computation) phase,
 Finally, the workload execution is assumed to scale linearly with hardware resources, \textit{i.e.} if the network's bandwidth doubles, the communication time is divided by two.
 
 This model is a practical yet oversimplification that disregards complex behaviors to ease calculations. 
-An example of such behavior is the assumption of instantaneous transitions, as moving phases has a cost in energy and latency. Moreover, linearly scaling execution time with resources (Definition \ref{def:comRatio}) overlooks important hardware and protocol overheads as described by Amdahl's law.     
+An example of such behavior is the assumption of instantaneous transitions, as moving phases has a cost in energy and latency. Moreover, linearly scaling execution time with resources (Definition \ref{def:comRatio}) overlooks important hardware and protocol overheads as described by Amdahl's law \cite{AmdahlLaw} and the possibility to communicate and compute in parallel.     
 
 The \textbf{power model} defines what is taken into account to calculate the drawn power by hardware resources.
 Following the phases, resources are in one of two states, either at \textit{max power} during their corresponding phase or at \textit{idle power} when idling. 
@@ -129,13 +129,13 @@ Again, as for the workload model, the linear extrapolation underestimates by ove
 	\centering
 		\begin{tabular}[c]{cccccc}
 			\toprule
-			Bandwidth(Gbps) & 100 & 200 & 400 & 800 & 1600 \\
+			\textbf{Bandwidth(Gbps)} & \textbf{100} & \textbf{200} & \textbf{400} & \textbf{800} & \textbf{1600} \\
 
 			\hline
-			NIC & 8.6 & 16.7 & 25.4 & 38.6* & 58.8*\\ 
+			\textbf{NIC} & 8.6 & 16.7 & 25.4 & 38.6* & 58.8*\\ 
 			\hline
 
-			transceiver & 4 & 6.5 & 10 & 16.5 & 27.2*\\ 
+			\textbf{transceiver} & 4 & 6.5 & 10 & 16.5 & 27.2*\\ 
 			\bottomrule
 		\end{tabular}
 		\caption*{ \hspace{4.5cm} * linearly extrapolated value}
@@ -146,6 +146,7 @@ The number of switches in the model is calculated from formulas \cite{Demy} cons
 The number of NICs correspond to the number of hosts, \textit{i.e.} 15k.
 The number of transceivers to consider isn't clearly disclosed in the paper. It mentions that the transceivers between end hosts and top of rack switches are electrical which have a negligible impact on the power. Moreover, as calculating the number of switches is hard to reproduce, the number of transceivers for the connections between switches is also hard to reproduce.
 
+\todo[inline]{put this in appendix ? (and explain that the public github repo makes it clearer and criticize the fact that it isn't mentionned in the article)}
 An attempt at reproducing the article's results on numbers of networks resources is presented in Table \ref{tab:PowAttempt}. 
 In this attempt, the same formulas \cite{Demy} are used in addition to a visualiser \cite{fatTreeVis}. A clear problem of using those formulas is that it assumes an even distribution of upstream and downstream ports which isn't the case for the considered switches with 60 upstream and 128 downstream ports. The number of ports in this attempt is considered to be 188.  
 The number of switches is interpolated linearly between the two found bounds of layers in which the number of hosts belong.
@@ -159,7 +160,7 @@ The number of switches is interpolated linearly between the two found bounds of 
 	$$ S_{tot} = \frac{H - H_l}{H_u - H_l} \times (S_u - S_l) + S_l$$
 	
 \end{definition}
-The linear interpolation is a considerable oversimplification, as networking infrastructures scales in discrete steeps.
+The linear interpolation is a considerable oversimplification, as networking infrastructures scales in discrete steps.
 
 For example, for the 400Gbps case (the Alibaba's pod), the 15 000 hosts have to be connected with 2 links, as the switches use 200G downstream ports. 
 For the calculation, due to the necessity to double the links at each host, 30K hosts are considered resulting in $u = 3$, $l = 2$ as $H_u = 1,882,384$ and $H_l = 19,208$. This leads to $S_u = 48,020$ and $S_l = 294$ giving $S_{tot} = 570.44$ rounded to $S_{tot} = 571$.
@@ -170,11 +171,11 @@ The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by 
 	\centering
 		\begin{tabular}[c]{cccccc}
 			\toprule
-			Bandwidth(Gbps) & 100 & 200 & 400 & 800 & 1600 \\
+			\textbf{Bandwidth(Gbps)} & \textbf{100} & \textbf{200} & \textbf{400} & \textbf{800} & \textbf{1600} \\
 			\hline
-			 switches & 239 & 239 & 571 & 1339 & 2876 \\ 
+			\textbf{switches} & 239 & 239 & 571 & 1339 & 2876 \\ 
 			\hline
-			 transceivers & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
+			\textbf{transceivers} & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
 			\bottomrule
 		\end{tabular}
 \end{table}
