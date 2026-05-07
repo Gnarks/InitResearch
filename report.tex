@@ -48,18 +48,25 @@ g}
 \usepackage{enumerate} % enumerate env
 \newtheorem{definition}{Definition} % to have definition environment
 
-\setlength {\marginparwidth }{2cm} % for the todonotes
+\usepackage{silence} % WarningFilter, WarningsOff, ErrorFilter
+% to silence the todonotes 2cm margin warning 
+% as not needed in a IEEEtran format and 1,5 is much better
+\setlength {\marginparwidth}{1.5cm} % for the todonotes
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes} % todo notes inline or not
 \usepackage{xargs} % abling new command creation
 \renewcommand{\arraystretch}{1.4} % add v space in tables
 
 % \newenvironment{tab}{\begin{adjustwidth}{1cm}{1cm} \itshape }{ \end{adjustwidth}}
-\newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
-\newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
-\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
-\newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
-\newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
+\NewCommandCopy{\todoFrame}{\todo}
+\newcommandx{\unsure}[2][1=]{\todoFrame[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{[unsure] #2}}
+\newcommandx{\change}[2][1=]{\todoFrame[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{[change] #2}}
+\newcommandx{\info}[2][1=]{\todoFrame[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{[info] #2}}
+\newcommandx{\improvement}[2][1=]{\todoFrame[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{[improvement] #2}}
+\newcommandx{\thiswillnotshow}[2][1=]{\todoFrame[disable,#1]{#2}}
+\renewcommand{\todo}[2][1=]{\todoFrame[#1]{[todo] #2}}
 
+
+\WarningFilter{todonotes}{The length marginparwidth} % removes the 2cm margin warning of todonotes
 
 \begin{document}
 
