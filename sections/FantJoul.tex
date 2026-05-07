@@ -3,38 +3,39 @@
 \subsection{Introduction} 
 The Internet was estimated, in 2022, to compose 1\% to 1.5\% of the global electricity consumption \cite{NetPerc}. 
 At world scale, this consumption is far from negligible as the world's global consumption was estimated between \qty{24 000}{\tera\watt\hour} and \qty{26 000}{\tera\watt\hour}. 
-This mean that, even though the Internet's proportion could seem small it is roughly equivalent to the estimated consumption of a reasonably developed country (like Spain with which is estimatedé around \qty{240}{\tera\watt\hour} \cite{NetPerc}). 
+This mean that, even though the Internet's proportion could seem small it is roughly equivalent to the estimated consumption of a reasonably developed country (like Spain which is estimated around \qty{240}{\tera\watt\hour} \cite{NetPerc}). 
 
 To reduce the Internet's energy consumption, it is necessary to properly understand what drives its energy demand.
-In this section, we explore an article \cite{FantasticJoul} investigating the energy demand of internet routers
-\footnote{The term router is used throughout this section to denote "wired network devices" including switches but excluding wireless access points and home routers.}.
+In this section, we explore an article \cite{FantasticJoul} investigating the energy demand of internet routers\footnote{The term router is used throughout this section to denote "wired network devices" including switches but excluding wireless access points and home routers.}.
 To this end, it explores multiples ways to retrieve and estimate their power consumption. 
 
 First, power data is retrieved in routers datasheets where "Typical" and "Maximum" power consumption estimations figure.
 Those datasheets are mainly intended for network operators to dimension the power supply of a rack of servers or server room. 
 Hence, they are estimated to be an overestimation of the actual power consumption of a deployed router.  
-An interesting finding is that, sometimes, datasheets aren't only imprecise or overestimating but underestimating actual power consumption.  
+An interesting finding is that, sometimes, datasheets aren't only imprecise or overestimating but underestimating actual power consumption (Sec. \ref{sec:insight}).  
 
-Second, measurements on deployed hardware's power consumption are used. 
+Second, in section \ref{sec:PSUExternal}, measurements on deployed hardware's power consumption are used (). 
 To do so, power supply units (PSU) are queried for their consumption measurements using standardized MIB objects over the simple network management protocol (SNMP) \cite{snmprfc}.
 Those PSU measurements are compared with external measurements of the measured routers of the measured routers.
 
-The last method relies on modeling the power consumption of deployed routers as proposed by \cite{35} with additional considerations for transceivers. 
+Finally, the last method (Sec \ref{sec:model}) relies on modeling the power consumption of deployed routers as proposed by \cite{35} with additional considerations for transceivers. 
 
-From the explored methods research questions emerges :
-\begin{enumerate}
-	\item [\textbf{Q1)}] Are datasheets representative of actual power consumption ? 
+The methods are then compared in section \ref{sec:comparison} and valuable insights on router power consumption is discussed in section \ref{sec:insight}.   
+
+From the explored three methods research questions emerges :
+{
+\hbadness 2781 
+\hfuzz 2781pt 
+\begin{description}
+	\item [\textbf{Q1)}] Are datasheets representative of actual deployed router power consumption ? 
 	\item [\textbf{Q2)}] Are PSU measurements reliable ?
 	\item [\textbf{Q3)}] Is it possible to precisely model deployed router power consumption ? 
-\end{enumerate}
-
-\todo[inline]{introduce sections and explain the 3 dataset combined}
-
+\end{description}
+}
 
 \subsection{Datasheet extraction}\label{sec:datasheet} 
-In this section, two objectives are pursued :
-The first is to collect a set of power data of numerous router models from their datasheets.    
-Once such dataset is formed, the second objective is to assess if datasheet are reliable.
+In this section, the extraction method of datasheets power data for 3 router vendors is discussed.
+The main purpose of such dataset is to be able to address the first research question \textbf{Q1}.
 
 The collection should be automated and if possible contain the following information :   
 \begin{itemize}
@@ -44,41 +45,60 @@ The collection should be automated and if possible contain the following informa
 	\item Release, end-of-sale and end-of-support dates 
 \end{itemize}
 Although, router datasheets are publicly available online, the automation process is not straightforward. 
-Since datasheets are organized differently, unstructured and, in some cases, incomplete.   
+Since they are organized differently, unstructured and, in some cases, incomplete.   
 Moreover, one needs a list of routers and their associated datasheets to automate the collection. 
 
 The solution used by the authors is a combination of an open-source device library \cite{NetBoxLib} used by NetBox, a network management software, and the GPT-o4 LLM. 
 The former is used to collect a router list with their corresponding datasheets and their PSU information if present, and the latter is used to extract the actual data from the datasheets.
-The manual assessment of the extracted data showed that the accurately was reasonably correct, even though, as one may imagine, not perfect. 
-Figure \ref{fig:pipeline} illustrates the actual data parsing pipeline used by the article.
+Manual assessment of the extracted data showed that the accurately was reasonably correct, even though, as one may imagine, not perfect. 
+Figure \ref{fig:pipeline} illustrates the actual data parsing pipeline used.
 
 \begin{figure}
 	\begin{center}
-		\includegraphics[width=0.95\columnwidth]{figures/data_parsing_pipeline.png}
+		\includegraphics[width=0.99\columnwidth]{figures/data_parsing_pipeline.png}
 	\end{center}
 	\caption{The data parsing pipeline \cite{LLMpipe}. Red text highlights steps assisted by the LLM.}\label{fig:pipeline}
 \end{figure}
 
-The dataset is formed, using the explained methodology, of 777 router models data from Cisco, Arista and Juniper. 
+The resulting  dataset  is formed, using the explained methodology, of 777 router models data from Cisco, Arista and Juniper. 
+It primarily lacks all sorts of dates but is open to the public to correct and to contribute to, as it is part of the Network Power Zoo initiative \cite{NetPowZoo}.
 
-\improvement[inline]{j'ai tendance à beaucoup les citer et utiliser leurs résultats mais n'ai pas trop le choix ?}
+
+\subsection{PSU and external measurements}\label{sec:PSUExternal} 
+The collection of power supply units measurements to address if they are grounded (\textbf{Q2}) is explained in the following.  
+PSU and interface traffic measurements are made during a 10-months period with a \qty{5}{\min} interval between queries over 107 routers deployed in Switch\cite{SwitchISP}, a Tier-2 ISP.
+The ISP serves as the National Research and Education Network (NREN), just as its Belgian counterpart Belnet.
+Thanks to its role, it is more incline to accept research project enabling the collection of those power measurements. 
+The interface traffic measurements are collected to possibly correlate the amount of traffic and the power draw.
+
+In addition to this collection, the authors collected external, PSU and traffic measurements during a 2-months period over 3 routers in the same ISP.  
+This collection was made possible by Autopower\cite{Autopower}, a system composed of a Raspberry Pi 4 and a Microchip MCP39F511N power meter featuring two measurements channels.
+This allows to measure externally the power draw of a router and power the Pi simultaneously.
+Which is an interesting point because it doesn't require an additional power plug in the ISP facility, which are often times spares. 
+The Pi controls the measurements samples of the Microchip and a client-server application built with gRPC to enable users to retrieve samples and control the measurements remotely.
+Connecting the client to the server is done on the client side to permit Autopower to work even behind a NAT.
+
+The system is made to be easily reproducible and cheap for operators to measure their router power data.
+This low level to entry easier to create a similar system to RIPE Atlas\cite{ripeAtlas} but for power measurements rather than internet connectivity.
+
 
 \subsection{Modeling and deriving parameters}\label{sec:model} 
-The objective of the model is to be easily derivable and reproducible by operators with a similar setup as Autopower.
+The objective of the power model is to be precise, easily derivable and reproducible by operators with a similar setup as Autopower.
 To this end, its parameters should be easily controllable and measurable.
+Similarly to Autopower, the methodology to measure and derivate the power model is open-sourced \cite{NetPowerBench}. 
 The focus is aimed at networking effects such as link state or traffic volume.
 Although other parameters may impact the actual power draw, such as temperature, OS version or fan speed, they are intentionally omitted to simplify reproducibility.
 
 The power model is derived from a former article\cite{35}, the main contribution made is the addition of transceivers consideration. 
-It is formed in a top-down manner and composed, on the highest level, of the static $P_{\textnormal{sta}}$ and dynamic $P_{\textnormal{dyn}}$ power draw.  
-Both depend on a configuration vector $C$ that defines every interface configuration $c_i$, e.g. its throughput. 
-The dynamic power also depends on the load vector L specifying the load at each interface $l_i$.
+It is formed in a top-down manner and composed, on the highest level, of a static $P_{\textnormal{sta}}$ and dynamic $P_{\textnormal{dyn}}$ power draw.  
+Both depend on a configuration vector $C$ that defines every interface configuration $c_i$, representing if it is up and its throughput. 
+The dynamic power also depends on a load vector L representing the load current at each interface $l_i$.
 Therefore, the model can be written as : 
 \begin{equation}
 	P_{\textnormal{tot}} = P_{\textnormal{sta}}(C) + P_{\textnormal{dyn}}(C,L)
 \end{equation}
 
-First, to refine the static component of the model it is separated in $P_{\textnormal{base}}$, the power draw when the device is on without, and $P_{\textnormal{interface}}$, the power draw per interface with respect to its configuration which should be summed for each interface. 
+First, to refine the static component of the model, it is separated in $P_{\textnormal{base}}$, the power draw when the device is on without anything plugged in or configuration, and $P_{\textnormal{interface}}$, the power draw per interface with respect to its configuration which should be summed for each interface. 
 The latter can be refined in two terms $P_{\textnormal{port}}$, the power consumed by the router interface port, and $P_{\textnormal{trx}}$, the power consumed by the transceiver which is a pluggable module inserted to the port. 
 Furthermore, empirical observation permits to write $P_{\textnormal{trx}}$ as the sum of two terms $P_{\textnormal{trx,in}}$, the power drawn when the transceiver is plugged in but off and $P_{\textnormal{trx,up}}$, the power consumption when the interface is up.
 Thus, the static component can be written
@@ -100,15 +120,15 @@ It can be further decomposed by the energy necessary to process a bit $E_\textno
 
 The second is $P_\textnormal{offset}$ which is independent of traffic and added to preserve the linear behaviour of the dynamic power consumption empirically.
 In no traffic situation, some device have a considerable power difference, either positive or negative, to the expected linear behaviour. 
-Concretely, this power offset is the difference between no traffic and (very) low traffic scenarios.  
+Concretely, this power offset is the difference between no traffic and (very) low traffic scenarios.
 Keeping the linear behaviour later helps to derive the model parameters. 
 
-However, a missing piece still remains in the understanding of this offset. 
+However, a missing piece still remains in the understanding of this offset.
 Although a positive offset could be explained by the fact that, in no traffic scenarios, routers may optimize the power consumption of components.
-Thus, reducing the actual power draw resulting in a positive offset.  
-The scenario of a negative offset is still unexplained as stated by Lin Jackie in its thesis\cite{lim} "it is unclear to us where this negative offset comes from. One speculation is that this behaviour is device-specific and may only occur on Cisco devices, and therefore depends on the circuit design of the device." 
+Thus, reducing the actual power draw resulting in a positive offset.
+The scenario of a negative offset is still unexplained as stated by Lin Jackie in its thesis\cite{lim} : \textit{ it is unclear to us where this negative offset comes from. One speculation is that this behaviour is device-specific and may only occur on Cisco devices, and therefore depends on the circuit design of the device.} 
 
-Regardless, the dynamic power component expressed
+Regardless, the dynamic power component is expressed
 
 \begin{equation}
 	P_{\textnormal{dyn}}(C,L) = \sum_{i=0}^{N_\textnormal{port}} P_{\textnormal{dyn,port}}(c_i,l_i) + P_\textnormal{offset}(c_i)
@@ -120,27 +140,24 @@ Regardless, the dynamic power component expressed
 
 This gives a model where 7 parameters need to be derived : $P_\textnormal{base}$, $P_\textnormal{trx,in}$, $P_\textnormal{trx,in}$, $P_\textnormal{trx,up}$, $P_\textnormal{offset}$, $E_\textnormal{pkt}$, $E_\textnormal{bit}$.
 Deriving is made possible by controlling the configuration and load vectors.
-
-To this end, the experimental setup is composed of 3  components :
-
+The experimental setup is composed of 3  components :
 \begin{description}
 	\item [\textbf{DUT}] The Device Under Test, in our case, the router aimed to be modeled.
 	\item [\textbf{Power meter}] \hspace{27pt} The power meter streams measurements and is controlled over USB by the orchestrator. In the article, the Microchip MCP39F511N is used but any similar power meter should function. The choice was to keep a small entry cost in price and space to enable operators to easily replicate the setup.  
-	\item [\textbf{Orchestrator}] \hspace{27pt} The orchestrator serves as the controller of measurements, configuration and traffic load. It is composed, in the experiments, by an Intel NUC equipped with a Mellanox ConnectX-6 NIC. It uses open-source tools such as InfiniBand's ib\_send\_bw and iPerf3 in UDP to generate traffic ranging from 100Mbps to 100Gbps. This lower the cost barrier relative to a high-end traffic generator.
+	\item [\textbf{Orchestrator}] \hspace{27pt} The orchestrator serves as the controller of measurements, configuration and traffic load. It is composed, in the experiments, by an Intel NUC equipped with a Mellanox ConnectX-6 NIC. It uses open-source tools such as InfiniBand's ib\_send\_bw and iPerf3 in UDP to generate traffic ranging from 100Mbps to 100Gbps. This lowers the cost barrier compared to a high-end traffic generator.
 \end{description}
 
-All ports and transceivers are of the same type to ease their power parameter derivation.
-
+All ports and transceivers are considered of the same type to ease their power parameter derivation.
 To derive all 7 parameters, the proposed methodology uses 5 scenarios:
 \begin{description}
 	\item [\textbf{Basic}] The DUT is turned on, all ports are down, and no transceivers are plugged in.  
 	\item [\textbf{Idle}] Transceivers are plugged in, and all port are configured down.
-	\item [\textbf{PortActive}] \hspace{18pt} Ports are activated, but interfaces remains down. 
+	\item [\textbf{PortActive}] \hspace{18pt} Ports are activated, but interfaces remain down. 
 	\item [\textbf{Trx}] All interfaces are up, but no traffic is sent. 
 	\item [\textbf{Snake}] Traffic is sent through all interfaces uniformly.
 \end{description}
 
-To realise the \textbf{Idle}, \textbf{PortActive} and \textbf{Trx} scenarios, one can keep the same cabling (Fig \ref{fig:snake}) and only play on the DUT configuration.
+To realise the \textbf{Idle}, \textbf{PortActive} and \textbf{Trx} scenarios, one can keep the same cabling (Fig. \ref{fig:snake}) and only play on the DUT configuration.
 For the \textbf{Idle} scenario, all ports should be configured inactive.
 The difference between \textbf{PortActive} and \textbf{Trx} is that interfaces are active only if both end-ports are up.
 So to easily represent both scenario without changing the cabling, one can simply turn on one port in each pair to keep interfaces down (\textbf{PortActive}) and turn them all up  to represent \textbf{Trx}. 
@@ -154,7 +171,7 @@ The \textbf{Snake} scenario is represented in Figure \ref{fig:snake} where the t
 \end{figure}
 
 To simplify the writing of equations an even number of ports ($2N$) is considered, resulting in a number of interfaces of $N$.   
-Deriving the 7 power model parameters from the measured power of a scenario $P_\textnormal{<scenario>}$ can be down using the following equations :
+Deriving the 7 power model parameters from the measured power of a scenario $P_\textnormal{<scenario>}$ can be done using the following equations :
 
 \begin{equation}
 	 P_{\textnormal{\textbf{Basic}}} = P_{\textnormal{Base}}
@@ -166,15 +183,10 @@ Deriving the 7 power model parameters from the measured power of a scenario $P_\
 \end{equation}
 \begin{equation}
 	P_{\textnormal{\textbf{PortActive}}} =  P_{\textnormal{\textbf{Idle}}} + N \cdot P_\textnormal{Port} 
-	 \label{portactive}
 \end{equation}
 \begin{equation}
 	P_{\textnormal{\textbf{Trx}}} =  P_{\textnormal{\textbf{Idle}}} + N \cdot (P_\textnormal{Port} + P_{\textnormal{trx,up}})
 	 \label{trx}
-\end{equation}
-\begin{equation}
-	P_{\textnormal{\textbf{Snake}}} =  P_{\textnormal{\textbf{Trx}}} + P_\textnormal{dyn}
-	 \label{snake}
 \end{equation}
 
 $P_\textnormal{base}$ is directly given by Eq. (\ref{basic}).
@@ -183,33 +195,31 @@ From Eq. (\ref{idle}), $P_\textnormal{Trx,in}$ is derived as $P_{\textnormal{trx
 
 Although $P_\textnormal{Port}$ could be derived directly from Eq. (\ref{idle}), to validate the linear behaviour and avoid accumulating errors from the estimation of $P_{\textnormal{\textbf{Idle}}}$. It is derived via linear regression over multiple number of ports $N$.  
 
-Similarly, from Eq. (\ref{trx}) via linear regression over multiple $N$ on $P_\textnormal{\textbf{Trx}}$ is retrieved $P_\textnormal{Port} + P_{\textnormal{trx,up}}$ and deduced $P_{\textnormal{trx,up}}$.
+Similarly, from Eq. (\ref{trx}), via linear regression over multiple $N$ on $P_\textnormal{\textbf{Trx}}$, is retrieved $P_\textnormal{Port} + P_{\textnormal{trx,up}}$ and deduced $P_{\textnormal{trx,up}}$.
 
-Finally, to derive the energy per bits ($E_\textnormal{bit}$) and packets ($E_\textnormal{bit}$), the approach proposed by the earlier work \cite{35} is followed. 
+Finally, to derive the energy per bits ($E_\textnormal{bit}$) and packets ($E_\textnormal{pkt}$), the approach proposed by earlier work \cite{35} is followed. 
 The total packet size is $S_\text{tot} = S + S_h$ with $S_h$ the header size and $S$ the size of the packet body.
-The model assumes that, for a fixed body size $S$, the power is a linear function of the bit rate $r$, knowing $S_h$ is constant.
-Since, the packet rate is constant, it is an intuitive and practical assumption, as it permits to distinguish $E_\textnormal{bit}$ from $E_\textnormal{bit}$ by varying $S$ and deduce its effect on the power which is only correlated to $E_\textnormal{bit}$ and $r$. 
+The model assumes that, for a fixed body size $S$, the power is a linear function of the bit rate $r$, knowing $S_h$ and $p$ are constant.
 This linear function can be written as
 \begin{equation}
 	P_{\textnormal{dyn,port}}|S = \alpha_S \cdot r + \beta_S
-	\label{lineareq}
 \end{equation}
 \begin{equation}
 	\Rightarrow \frac{P_{\textnormal{dyn,port}}|S}{\partial r} = \alpha_S
 	\label{impl1}
 \end{equation}
 
-Moreover, since packets have a controlled size $S$ in bytes, the bit and packet rate ($p$ and $r$) are related by $p = r/8 \cdot S_\text{tot}$. Hence, Eq (\ref{energy}) rewrites: 
+Since the packet rate is assumed constant, an intuitive manner of distinguishing $E_\textnormal{bit}$ from $E_\textnormal{bit}$ is done by varying $S$ and deducing its effect on the measured power which is only correlated to $E_\textnormal{bit}$ and $r$. 
+Moreover, since packets have a controlled size in bytes, the bit and packet rate ($p$ and $r$) are related by $p = r/8 \cdot S_\text{tot}$. Hence, Eq (\ref{energy}) rewrites: 
 \begin{equation}
 	P_{\textnormal{dyn,port}} = E_\textnormal{bit} \cdot r + E_\textnormal{pkt} \cdot \frac{r}{8 \cdot S_\text{tot}}
-	\label{equenergy}
 \end{equation}
 \begin{equation}
 	\Rightarrow \frac{P_{\textnormal{dyn,port}}}{\partial r} = E_\textnormal{bit} + \frac{E_\textnormal{pkt}}{8 \cdot S_\text{tot}}
 	\label{impl2}
 \end{equation}
 
-Since, the size $S$ is controlled, we have that Eq. (\ref{impl1}) is the same as to Eq. (\ref{impl2}), hence 
+Since, the size $S$ is controlled, we have that Eq. (\ref{impl1}) is the same as to Eq. (\ref{impl2}), the following equation holds 
 
 \begin{equation}
 	E_\textnormal{bit} \cdot 8S + E_\textnormal{bit} \cdot 8S_h + E_\textnormal{pkt} = \alpha_S \cdot 8 \cdot S_\text{tot}
@@ -219,48 +229,32 @@ Since, the size $S$ is controlled, we have that Eq. (\ref{impl1}) is the same as
 To derive $E_\textnormal{bit}$ and $E_\textnormal{bit}$, two steps are required.
 
 First, $P_\textnormal{\textbf{Snake}}$ measurements  are made for a fixed size $S$ by varying the bit rate $r$, this permits to derivate $\alpha_S$ as the slope of the linear regression over $r$ of the measured $P_\textnormal{\textbf{Snake}}$.
-Repeating this process for multiples values of $S$ gives a set of couples ($S_i$, $\alpha_{Si}$) which allows computing multiples values of the right-hand side of Eq (\ref{eq:final}) in relations to the corresponding $S$ from Eq (\ref{eq:final}).
-This process results in a set of packet body size coupled $S$ with their total corresponding energy consumption (left-hand side of Eq (\ref{eq:final})).
+Repeating this process for multiples values of $S$ gives a set of couples ($S_i$, $\alpha_{Si}$) which allows computing multiples values of the right-hand side of Eq (\ref{eq:final}) in relations to the corresponding $S$.
+This process results in a set of packet body size coupled  with their total corresponding energy consumption (left-hand side of Eq (\ref{eq:final})).
+
 Second, from the latter computed set, linear regression of the energy is once again used over $S$.
-The resulting intercept represents $E_\textnormal{bit} \cdot 8S_h + E_\textnormal{pkt}$. 
-The resulting slope gives $E_\textnormal{pkt} \cdot 8$. 
+The resulting intercept (resp. slope) represents $E_\textnormal{bit} \cdot 8S_h + E_\textnormal{pkt}$ (resp. $E_\textnormal{pkt} \cdot 8$) 
 As the prior method considers a single interface, both energy consumption are derived for each interface by dividing the slope $\alpha_S$ by the number of equally configured interfaces.   
 
 Finally, to keep the linear behaviour, the $P_\text{offset}$ is derived from the intercept $\beta_S$ of the regression of $P_\text{port,dyn}$ over r:
 \begin{equation}
 	P_\text{offset} = \beta_S - P_\text{Trx}
 \end{equation}
-This intercept is used as it logically perfectly aligns with the linear function and is already computed. 
+This intercept is used as it perfectly aligns with the linear function and is already computed. 
 
-
-\subsection{PSU and external measurements}\label{sec:PSUExternal} 
-The collection of power supply units measurements to address if they are grounded (\textbf{Q2}) is explained in the following.  
-PSU and interface traffic measurements are made during a 10-months period with a \qty{5}{\min} interval between queries over 107 routers deployed in Switch\cite{SwitchISP}, a Tier-2 ISP.
-The ISP serves as the National Research and Education Network (NREN) just, as Belnet is in Belgium. Thanks to its role, it is more incline to accept research project enabling the collection of those power measurements. 
-The interface traffic measurements are collected to possibly correlate the amount of traffic and the power draw.
-
-In addition to this collection, the authors collected external, PSU and traffic measurements during a 2-months period over 3 routers in the same ISP.  
-This collection was made possible by Autopower\cite{Autopower}, a system composed of a Raspberry Pi 4 and a Microchip MCP39F511N power meter featuring two measurements channels.
-This allows to measure externally the power draw of a router and power the Pi simultaneously.
-Which is an interesting point because it doesn't require an additional power plug in the ISP facility, which are often times spares. 
-The Pi controls the measurements samples of the Microchip and a client-server application built with gRPC to enable users to retrieve samples and control the measurements remotely.
-Connecting the client to the server is done on the client side to permit the Autopower to work even behind a NAT.
-
-The system is made to be easily reproducible and cheap for operators to measure their router power data.
-Possibly sharing it to create a similar system to RIPE Atlas\cite{ripeAtlas} but for power measurements and not internet connectivity.
-
-\subsection{Comparing power data sources}\label{sec:Fanresults} 
+\subsection{Comparing power data sources}\label{sec:comparison} 
 \todo[inline]{6 }
-
-The first research question (\textbf{Q1}) can now be addressed using it.
-
-\textit{Are datasheets reliable in power draw information ?}
-Although, as discussed earlier, datasheets power values are meant to dimension racks or servers room, knowing if their typical power draw claims are accurate is addressed.  
-To do so, 
 
 \subsection{Insights in router power}\label{sec:insight} 
 \todo[inline]{and 7, 8th and 9th (quickly mention it  stating it is only preliminary insight)}
+% The first research question (\textbf{Q1}) can now be addressed using it.
+% \textit{Are datasheets reliable in power draw information ?}
+% Although, as discussed earlier, datasheets power values are meant to dimension racks or servers room, knowing if their typical power draw claims are accurate is addressed.  
+% To do so, 
+
 \subsection{Towards improving Power consumption}\label{sec:improving} 
 \todo[inline]{leverage insights to foster future research directions}
+
 \subsection{Conclusion}\label{sec:conclusion} 
+\todo[inline]{talk about the merged dataset}
 
