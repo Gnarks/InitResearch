@@ -1,3 +1,8 @@
+\definecolor{lineblue}{RGB}{94, 92, 255}
+\definecolor{lineorange}{RGB}{255, 69, 58}
+\definecolor{linegreen}{RGB}{0, 199, 129}
+\definecolor{textdark}{RGB}{44, 62, 80}
+
 \section{Fantastic Joules and Where to Find Them}
 
 \subsection{Introduction} 
@@ -243,14 +248,101 @@ Finally, to keep the linear behaviour, the $P_\text{offset}$ is derived from the
 This intercept is used as it perfectly aligns with the linear function and is already computed. 
 
 \subsection{Comparing power data sources}\label{sec:comparison} 
-\todo[inline]{6 }
+The power data is gathered and assembled in a large dataset\cite{NetPowZoo} consisting of the result of the 3 disclaimed methods (datasheets, PSUs, external and power model).
+On the basis of the gathered information, router power data sources are compared, and research questions are addressed in this section.
+
+Addressing the first research question : "Are datasheets representative of actual deployed router power consumption ?", is done by comparing typical datasheet power draw with PSUs measurements collected with the described methodology of Section \ref{sec:PSUExternal}.
+In table \ref{datasheetsVsPSU} is represented the comparison, most of the compared devices have a reported typical power draw higher than the measured one.
+This is intuitive, reported power in datasheets are used by network operators to properly scale the electricity demand, hence overestimation isn't an issue. 
+However, some devices underestimates their typical power draw which is surprising.   
+Due to this overestimation requirement, and the fact that some routers typical power underestimates the actual power draw, datasheets are untrustworthy of actual deployed router consumption. 
+
+Addressing the second and third research questions : "Are PSU measurements reliable ?" and "Is it possible to precisely model deployed router power consumption ?" relies on the deployment of Autopower on the 3 externally measured routers (Sec. \ref{sec:PSUExternal}).  
+Figure \ref{fig:autopowerresults} represents the resulting measurements averaged on \qty{30}{\min} intervals.  
+
+The second research question is addressed by comparing external measurements to PSU measurements.
+In Figure \ref{autoa}, PSU measurements are precise, albeit not accurate.
+\textit{i.e.}, they match the shape of the external measurements but have a pseudo-constant offset.
+However, in Figure \ref{autob}, the PSU measurements don't even align with the Autopower measurements.  
+To draw a general conclusion, replication of the observations should be done.
+But from the available observations and results, it seems PSU measurements are untrustworthy.
+
+
+The last research question is addressed by comparing external measurements to the power model predictions.
+The approximation of the model are promising, the model is precise but inaccurate, having an offset ranging from 2-3 W (Fig. \ref{autoa}, \ref{autoc}) to $\approx$20W (Fig. \ref{autob}).
+Some artifacts, such as, Figure \ref{autoa} October 22, are explained by maintenance taking down an interface, making the power model think that the transceiver was unplugged although it might have not.  
+Since during maintenance interfaces can be taken down without unplugging the transceiver.
+This led to a $\approx$13W drop which correlates to the 12W specified for the transceiver and the $\approx$1W of port power. 
+To address the last question, the power model does have some offset but looks to be a better predictor of power consumption than PSU measurements.
+
+
+\begin{table}[ht]
+	\caption{"Typical" power reported by datasheets compared to SNMP PSU measurements \cite{FantasticJoul}.}\label{datasheetsVsPSU}
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        \diagbox{Router model}{Power values} & \shortstack{Measured \\ \textit{Median}} & \multicolumn{2}{c}{\shortstack{Datasheet \\ ``Typical''}} \\
+        \midrule
+        NCS-55A1-24H      & 358 W & 600 W & 40 \% \\
+        ASR-920-24SZ-M    & 73 W  & 110 W & 33 \% \\
+        NCS-55A1-24Q6H-SS & 285 W & 400 W & 28 \% \\
+        NCS-55A1-48Q6H    & 346 W & 460 W & 24 \% \\
+        ASR-9001          & 335 W & 425 W & 21 \% \\
+        N540-24Z8Q2C-M    & 159 W & 200 W & 20 \% \\
+        8201-32FH         & 359 W & 288 W & {\color{red}-24} \% \\
+        8201-24H8FH       & 296 W & 205 W & {\color{red}-44} \% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure*}
+	\centering
+	\subfloat{
+		\begin{tikzpicture}[font=\sffamily\large]
+			% Autopower
+			\draw[lineblue, thick] (0,0) -- (1,0);
+			\node[anchor=west] at (1.1,0) {external};
+
+			% PSU
+			\begin{scope}[shift={(4.2,0)}]
+				\draw[lineorange, thick] (0,0) -- (1,0);
+				\node[anchor=west] at (1.1,0) {PSU};
+			\end{scope}
+
+			% Model
+			\begin{scope}[shift={(7.5,0)}]
+				\draw[linegreen, thick] (0,0) -- (1,0);
+				\node[anchor=west] at (1.1,0) {Model};
+			\end{scope}
+		\end{tikzpicture}
+
+	}
+
+	\subfloat[8201-32FH]{\label{autoa}
+		\includegraphics[width=0.31\textwidth]{figures/auto1.pdf}
+	}
+	\hspace{0pt}
+	\subfloat[NCS-55A1-24H]{\label{autob}
+		\includegraphics[width=0.31\textwidth]{figures/auto2.pdf}
+	}
+	\hspace{0pt}
+	\subfloat[N540X-8Z16G-SYS-A]{\label{autoc}
+		\includegraphics[width=0.31\textwidth]{figures/auto1.pdf}
+	}
+	\caption{Comparison of power model predictions with PSU and external power measurements. PSU measurements in Figure \ref{autoc} are missing because the router does not report its power draw.}\label{fig:autopowerresults}
+\end{figure*}
 
 \subsection{Insights in router power}\label{sec:insight} 
+
 \todo[inline]{and 7, 8th and 9th (quickly mention it  stating it is only preliminary insight)}
+
+
 % The first research question (\textbf{Q1}) can now be addressed using it.
 % \textit{Are datasheets reliable in power draw information ?}
 % Although, as discussed earlier, datasheets power values are meant to dimension racks or servers room, knowing if their typical power draw claims are accurate is addressed.  
 % To do so, 
+
+\todo[inline]{}
 
 \subsection{Towards improving Power consumption}\label{sec:improving} 
 \todo[inline]{leverage insights to foster future research directions}
