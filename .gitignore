@@ -34,5 +34,4 @@ report.pdf
 *.synctex.gz(busy)
 *.rubbercache
 rubber.cache
-ltex.*
 refs*

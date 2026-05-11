@@ -270,7 +270,7 @@ But from the available observations and results, it seems PSU measurements are u
 
 The last research question is addressed by comparing external measurements to the power model predictions.
 The approximation of the model are promising, the model is precise but inaccurate, having an offset ranging from 2-3 W (Fig. \ref{autoa}, \ref{autoc}) to $\approx$20W (Fig. \ref{autob}).
-Some artifacts, such as, Figure \ref{autoa} October 22, are explained by maintenance taking down an interface, making the power model think that the transceiver was unplugged although it might have not.  
+Some artifacts, such as, Figure \ref{autoa} October 22, are explained by maintenance taking down an interface, making the power model think that the transceiver was unplugged, although it might have not.  
 Since during maintenance interfaces can be taken down without unplugging the transceiver.
 This led to a $\approx$13W drop which correlates to the 12W specified for the transceiver and the $\approx$1W of port power. 
 To address the last question, the power model does have some offset but looks to be a better predictor of power consumption than PSU measurements.
@@ -333,19 +333,104 @@ To address the last question, the power model does have some offset but looks to
 \end{figure*}
 
 \subsection{Insights in router power}\label{sec:insight} 
+From the resulting dataset multiple insights on router power consumption are derived. 
 
-\todo[inline]{and 7, 8th and 9th (quickly mention it  stating it is only preliminary insight)}
+\textbf{Turning an interface down is not turning it off}.
+An important insight of the paper is that turning an interface down does not necessarily turn it down (\textit{i.e.} its power consumption does not change).
+This counter-intuitive behaviour is represented by the power model with the $P_\text{trx,in}$ variable which, for optical transceivers, dominates the transceiver power draw (LR and T in Table\ref{tab:params}). 
+The exact reason is unclear and might be vendor dependent, but a possibility could be that when configuring a port down, SerDes Lines are not turned off.
+The fact that transceivers are powered on as they are plugged in could be corrected in software, by configuring a down port to turn off the actual physical interface. 
+
+\textbf{The energy cost of traffic is relatively small}
+As seen in Table \ref{tab:params}, the energy cost of traffic, either in terms of packet ($E_\text{pkt}$) or bits ($E_\text{pkt}$), is pretty consistent regardless of the speed and small.
+As they are respectively in the order of some pJ and nJ.
+As an example, at 100Gbps considering $E_\text{pkt}=22 \text{pJ}$ $E_\text{pkt}=58 \text{nJ}$ and 1500 bytes packets, the resulting power consumption would be $\approx$\qty{0.4}{\watt}, which represents only 0.125\% of $P_\text{base}$ is it equals to \qty{320}{\watt}.
+
+\textbf{Transceiver power consumption is significant}
+In contrast to traffic, the article states that the transceivers in the studied network combines to a \qty{2.2}{\kilo \watt} power draw representing $\approx$10\% of the total ISP power consumption.
+This is an important insight, as to recall, the main contribution of the article is the introduction of the transceivers in the power model's parameters.
+
+\textbf{Transceiver power draw is independent of traffic}
+The assumption made in Section \ref{sec:model} is somewhat verified, though more observations should be done to properly assess it, by Table \ref{tab:params}(b). 
+Indeed, changing transceivers have a negligible impact on $E_\text{pkt}$ and $E_\text{pkt}$. 
 
 
-% The first research question (\textbf{Q1}) can now be addressed using it.
-% \textit{Are datasheets reliable in power draw information ?}
-% Although, as discussed earlier, datasheets power values are meant to dimension racks or servers room, knowing if their typical power draw claims are accurate is addressed.  
-% To do so, 
+\textbf{Link sleeping is not as promising as anticipated}
+Recent work \cite{Hypnos} foster the benefits of link sleeping in networks.
+They rely on configuration and turn down ports, but as observed, turning down ports does not turn transceivers off. 
+As modeled, $P_\text{trx,in}$ still has to be consumed even though the corresponding interface is configured off. 
+This results in smaller power savings than anticipated. 
+Moreover, the algorithm proposed also rely on internal links which only represent 50\% of the Switch network.
+Thus, the saving in smaller ISP composed mainly of external links is even more reduced.
 
-\todo[inline]{}
+\textbf{PSU (in)efficiency and scaling}
+In addition to collecting the dataset, due to the PSU unreliability, the authors explored and experimented with PSU.   
+Without detailing their preliminary work, they found that scaling properly and having efficient PSU could lead to considerable savings.    
+Their work, tho exploratory, presents interesting savings and foster the idea of increasing PSU conversion efficiency and using reducing their number.
+Their experiments and the related power savings figures in Table \ref{tab:psu}.  
+
+\begin{table*}[ht]
+    \small
+	\caption{Example of power model derived parameters using Section \ref{sec:model}'s methodology from the article \cite{FantasticJoul}.\\
+		\scriptsize
+		$^{\dagger}$: Due to the interface’s low speed, the observable power variation with traffic is very small, rendering the derivation of $E_\text{bit}$ and $E_\text{pkt}$ imprecise.
+The resulting errors matter little for the same reason: traffic-induced power is small on this device. }\label{tab:params}
+
+    \centering
+    \begin{tabular}{lllcccccccc}
+        \toprule
+        & Port & Trans. & Speed & $P_{\text{base}}$ [W] & $P_{\text{port}}$ [W] & $P_{\text{trx,in}}$ [W] & $P_{\text{trx,up}}$ [W] & $E_{\text{bit}}$ [pJ] & $E_{\text{pkt}}$ [nJ] & $P_{\text{offset}}$ [W] \\
+        \midrule
+        (a) & \multicolumn{10}{l}{NCS-55A1-24H} \\
+            & QSPF28 & Passive DAC & 100G & 320 & 0.32 & 0.02 & 0.19 & 22 & 58 & 0.37 \\
+            & $|$    & $|$         & 50G  & -   & 0.18 & 0.02 & 0.16 & 21 & 57 & 0.34 \\
+            & $|$    & $|$         & 25G  & -   & 0.10 & 0.02 & 0.08 & 21 & 55 & 0.21 \\
+        \midrule
+        (b) & \multicolumn{10}{l}{Nexus9336-FX2} \\
+            & QSFP28 & LR          & 100G & 285 & 1.9  & 2.79 & -0.06 & 8  & 24 & -0.43 \\
+            & $|$    & Passive DAC & 100G & 285 & 1.13 & 0.09 & -0.02 & 8  & 26 & 0.07  \\
+        \midrule
+        (c) & \multicolumn{10}{l}{8201-32FH} \\
+            & QSFP   & Passive DAC & 100G & 253 & 0.94 & 0.35 & 0.21  & 3  & 13 & -0.04 \\
+        \midrule
+        (d) & \multicolumn{10}{l}{N540X-8Z16G-SYS-A} \\
+            & SFP    & T           & 1G   & 33  & -0.0 & 3.41 & 0.0   & 37 & -48$^{\dagger}$ & 0.01 \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+\begin{table*}[ht]
+
+	\caption{Energy savings related to using more efficient (defined by 80 plus standard \cite{80plus}) PSU or using only one rather than two from the article \cite{FantasticJoul}.}\label{tab:psu}
+    \centering
+    \begin{tabular}{lccccc}
+        \toprule
+        Power-saving measure $\backslash$ 80 Plus standard & Bronze & Silver & Gold & Platinum & Titanium \\
+        \midrule
+        \S~9.3.2: More efficient PSUs & 2\% (482 W)  & 3\% (737 W)  & 4\% (958 W)  & 5\% (1156 W) & 7\% (1563 W) \\
+        \S~9.3.4: Only one PSU        & 4\% (1002 W) & --           & --           & --           & --           \\
+        \S~9.3.5: Both                & 5\% (1240 W) & 6\% (1392 W) & 7\% (1528 W) & 7\% (1660 W) & 9\% (1974 W) \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
 
 \subsection{Towards improving Power consumption}\label{sec:improving} 
-\todo[inline]{leverage insights to foster future research directions}
+The main contribution of the article, adding transceivers in the prior proposed power model\cite{35}, highlights an important power saving solution.
+Particularly optical transceivers, as observed (Sec. \ref{sec:comparison}), tend to consume most (if not all) the power as soon as they are plugged in.  
+This is due to the fact that : 
+\begin{itemize}
+	\item [1)] Turning of the port they are plugged in does not power them off.  
+	\item [2)] Their power consumption is not (or little) influenced by traffic.
+\end{itemize}
+This makes the idea of link sleeping granting less power savings than what could have been anticipated.
+In addition, it seems that this issue might come from routers operating systems.  
+Meaning that the issue could be solved with relative ease.
+
+The second energy-saving idea explored consists of using more efficient power supply units or reducing their number to one. 
+Since PSU are often doubled to ensure availability by redundancy.  
+This could be solved by using a technique referred as "hot stand-by" where only one PSU is used to supply the router and other remains online for redundancy.   
+This could lead to better efficiency and reduced power consumption.
+Though, the potential side effects are (yet) studied and could, for thermal reasons for example, result to an increase in wear and tear.  
 
 \subsection{Conclusion}\label{sec:conclusion} 
 \todo[inline]{talk about the merged dataset}
