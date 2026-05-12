@@ -3,3 +3,17 @@ behaviour
 Autopower
 pJ
 nJ
+NetBox
+Belnet
+NREN
+gRPC
+DUT
+PortActive
+Trx
+realise
+Eq
+dyn
+PSUs
+ibsendbw
+InfiniBand
+Mellanox

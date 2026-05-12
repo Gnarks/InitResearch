@@ -1,0 +1,5 @@
+{"rule":"EN_UNPAIRED_BRACKETS","sentence":"^\\QFrom the explored three methods research questions emerge : 2781 2781pt [Q1)] Are datasheets representative of actual deployed router power consumption ?\\E$"}
+{"rule":"EN_UNPAIRED_BRACKETS","sentence":"^\\Q[Q2)] Are PSU measurements reliable ?\\E$"}
+{"rule":"EN_UNPAIRED_BRACKETS","sentence":"^\\Q[Q3)] Is it possible to precisely model deployed router power consumption ?\\E$"}
+{"rule":"REP_PASSIVE_VOICE","sentence":"^\\Q[Trx] All interfaces are up, but no traffic is sent.\\E$"}
+{"rule":"REP_PASSIVE_VOICE","sentence":"^\\Q[Snake] Traffic is sent through all interfaces uniformly.\\E$"}
