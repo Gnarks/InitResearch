@@ -6,3 +6,6 @@
 {"rule":"EN_UNPAIRED_BRACKETS","sentence":"^\\QFrom the explored three methods research questions emerge : 2781 2781pt [Q1)] Are datasheets representative of actual deployed routers power consumption ?\\E$"}
 {"rule":"EN_UNPAIRED_BRACKETS","sentence":"^\\Q[Q3)] Is it possible to precisely model deployed routers power consumption ?\\E$"}
 {"rule":"REP_PASSIVE_VOICE","sentence":"^\\Q[Trx] All interfaces are UP, but no traffic is sent.\\E$"}
+{"rule":"PLEASE_BE_VB","sentence":"^\\QOne has to ensure the variation of the number of ports does not activate and interface, both end ports of an interface should never be UP at the same time.\\E$"}
+{"rule":"PLEASE_BE_VB","sentence":"^\\QThe variation of the number of ports should not activate and interface, both end ports of an interface should never be UP at the same time.\\E$"}
+{"rule":"PLEASE_BE_VB","sentence":"^\\QAn important consideration is that the variation of the number of ports should not activate and interface, both end ports of an interface should never be UP at the same time.\\E$"}

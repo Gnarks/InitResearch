@@ -142,6 +142,47 @@ Regardless, the dynamic power component is expressed
 	\label{energy}
 \end{equation}
 
+
+\begin{figure*}[t]
+\forestset{
+  math tree/.style={
+    for tree={
+      draw,               
+      rounded corners,    
+      fill=violet!5!white,  
+      edge={->, thick},   
+      font=\small,        
+      math content,       % Keeps everything in math mode automatically
+      parent anchor=south,
+      child anchor=north,
+      l sep=1.5cm,        % Vertical gap between equation steps
+      s sep=1.5cm,        % Horizontal gap if you branch out
+      inner sep=8pt       % Gives the equations some breathing room inside the box
+    }
+  }
+}
+\centering
+
+\begin{forest} math tree
+[{P_{\textnormal{tot}} = P_{\textnormal{sta}}(C) + P_{\textnormal{dyn}}(C,L)}
+  [{
+	P_{\textnormal{sta}}(C) = P_{\textnormal{base}}(C) + \sum_{i=1}^{N_{\textnormal{port}}}  P_{\textnormal{interface}}(c_i)
+} 
+    [{P_{\textnormal{interface}}(c_i) = P_{\textnormal{port}}(c_i) + P_{\textnormal{trx}}(c_i)}
+    [{P_{\textnormal{trx}}(c_i) = P_{\textnormal{trx,in}}(c_i) + P_{\textnormal{trx,up}}(c_i)}]]
+  ]
+  [{P_{\textnormal{dyn}}(C,L) = \sum_{i=1}^{N_\textnormal{port}} P_{\textnormal{dyn,port}}(c_i,l_i) + P_\textnormal{offset}(c_i)}
+    [{P_{\textnormal{dyn,port}}(c_i,l_i) = E_\textnormal{bit}(c_i) \cdot r_i + E_\textnormal{pkt}(c_i) \cdot p_i }]
+  ]
+]
+\end{forest}
+
+
+	\caption{Power model structure.}\label{fig:modelTree}
+\end{figure*}
+
+The structure of the model is represented in Figure \ref{fig:modelTree}.
+
 This gives a model where 7 parameters need to be derived : $P_\textnormal{base}$, $P_\textnormal{trx,in}$, $P_\textnormal{port}$, $P_\textnormal{trx,up}$, $P_\textnormal{offset}$, $E_\textnormal{pkt}$, $E_\textnormal{bit}$.
 Parameter derivation is made possible by controlling the configuration and load vectors.
 The experimental setup is composed of three components  :
@@ -152,15 +193,16 @@ The experimental setup is composed of three components  :
 \end{description}
 
 The arrangement of those experimental components is described in Figure \ref{fig:setup}.
-\begin{figure}
+\begin{figure}[ht]
 	\begin{center}
-		\includegraphics[width=0.95\columnwidth]{figures/auto1.pdf}
+		\includesvg[width=0.7\columnwidth]{figures/FantJoulExpSetup.drawio.svg}
 	\end{center}
-	\caption{Layout of the experiment}\label{fig:setup}
+	\caption{Layout of the experiment for configuration and measurements, excluding transmissions (see Figure \ref{fig:snake}).}\label{fig:setup}
 \end{figure}
 
 
 All ports and transceivers are considered of the same type to ease their power parameter derivation.
+Moreover, the configuration at each port is identical.
 To derive all 7 parameters, the proposed methodology uses 5 scenarios:
 \begin{description}
 	\item [\textbf{Basic}] The DUT is turned ON, all ports are DOWN, and no transceivers are plugged in.  
@@ -176,7 +218,7 @@ The difference between \textbf{PortActive} and \textbf{Trx} is that interfaces a
 So to easily represent both scenarios without changing the cabling, one can simply turn on one port in each pair to keep interfaces DOWN (\textbf{PortActive}) and turn both of them UP to represent \textbf{Trx}. 
 The \textbf{Snake} scenario is represented in Figure \ref{fig:snake} where the traffic is generated and looped through every interface before coming back to the generator.   
 
-\begin{figure}[ht]
+\begin{figure}
 	\begin{center}
 		\includesvg[width=0.5\columnwidth]{figures/Snake.drawio.svg}
 	\end{center}
@@ -184,7 +226,7 @@ The \textbf{Snake} scenario is represented in Figure \ref{fig:snake} where the t
 \end{figure}
 
 To simplify the writing of equations an even number of ports ($2N$) is considered, resulting in a number of interfaces of $N$.   
-Deriving the 7 power model parameters from the measured power of a scenario $P_\textnormal{<scenario>}$ can be done using the following equations :
+Deriving the 7 power model parameters from the measured power of a scenario $P_\textnormal{<\textbf{scenario}>}$ can be done using the following equations :
 
 \begin{equation}
 	 P_{\textnormal{\textbf{Basic}}} = P_{\textnormal{Base}}
@@ -201,58 +243,76 @@ Deriving the 7 power model parameters from the measured power of a scenario $P_\
 	P_{\textnormal{\textbf{Trx}}} =  P_{\textnormal{\textbf{Idle}}} + N \cdot (P_\textnormal{Port} + P_{\textnormal{trx,up}})
 	 \label{trx}
 \end{equation}
+\begin{equation}
+	P_{\textnormal{\textbf{Snake}}} =  P_{\textnormal{\textbf{Trx}}} +   \sum_{i=1}^{N_\textnormal{port}} E_\textnormal{bit} \cdot r + E_\textnormal{pkt} \cdot p + P_\textnormal{offset}
+	 \label{snake}
+\end{equation}
 
 $P_\textnormal{base}$ is directly given by Eq. (\ref{basic}).
 
 From Eq. (\ref{idle}), $P_\textnormal{Trx,in}$ is derived as $P_{\textnormal{trx,in}} =  (P_{\textnormal{\textbf{Idle}}} - P_{\textnormal{base}}) / 2N  $
 
-Although $P_\textnormal{Port}$ could be derived directly from Eq. (\ref{idle}), to validate the linear behaviour and avoid accumulating errors from the estimation of $P_{\textnormal{\textbf{Idle}}}$, it is derived via linear regression over multiple number of ports $N$.  
+Although $P_\textnormal{Port}$ could be derived directly from Eq. (\ref{idle}), to validate the linear behaviour and avoid accumulating errors from the estimation of $P_{\textnormal{\textbf{Idle}}}$, multiple values of $N$ are measured and $P_\textnormal{port}$ is derived by linear regression over $N$. This results in a linear fit having $P_\textnormal{\textbf{Idle}}$ as intercept and a $P_\textnormal{port}$ slope. Hence, $P_\textnormal{port}$ is derived as the slope of the linear fit.   
+An important consideration is that the variation of the number of ports should not activate and interface, both end ports of an interface should never be UP at the same time.
 
 Similarly, from Eq. (\ref{trx}), via linear regression over multiple $N$ on $P_\textnormal{\textbf{Trx}}$, is retrieved $P_\textnormal{Port} + P_{\textnormal{trx,up}}$ and deduced $P_{\textnormal{trx,up}}$.
 
-Finally, to derive the energy per bits ($E_\textnormal{bit}$) and packets ($E_\textnormal{pkt}$), the approach proposed by earlier work \cite{35} is followed. 
-The total packet size is $S_\text{tot} = S + S_h$ with $S_h$ the header size and $S$ the size of the packet body.
-The model assumes that, for a fixed body size $S$, the power is a linear function of the bit rate $r$, knowing $S_h$ and $p$ are constant.
-This linear function can be written as
+Finally, to derive the energy per bit ($E_\textnormal{bit}$) and packet ($E_\textnormal{pkt}$) from Eq. (\ref{snake}), the approach proposed by earlier work \cite{35} is followed. 
+Fixing the packet length to $L$ in bytes permits to relate the bit rate $r$ and packet rate $p$ by $p = r/8 \cdot L$. Hence, Eq. (\ref{snake}) rewrites: 
 \begin{equation}
-	P_{\textnormal{dyn,port}}|S = \alpha_S \cdot r + \beta_S
-\end{equation}
-\begin{equation}
-	\Rightarrow \frac{P_{\textnormal{dyn,port}}|S}{\partial r} = \alpha_S
-	\label{impl1}
+	P_{\textnormal{\textbf{Snake}}} =  P_{\textnormal{\textbf{Trx}}} + P_\textnormal{offset} + \sum_{i=1}^{N_\textnormal{port}} E_\textnormal{bit} \cdot r + E_\textnormal{pkt} \cdot \frac{r}{8 \cdot L} 
 \end{equation}
 
-Since the packet rate is assumed constant, an intuitive manner of distinguishing $E_\textnormal{bit}$ from $E_\textnormal{bit}$ is done by varying $S$ and deducing its effect on the measured power which is only correlated to $E_\textnormal{bit}$ and $r$. 
-Moreover, since packets have a controlled size in bytes, the bit and packet rate ($p$ and $r$) are related by $p = r/8 \cdot S_\text{tot}$. Hence, Eq. (\ref{energy}) rewrites: 
-\begin{equation}
-	P_{\textnormal{dyn,port}} = E_\textnormal{bit} \cdot r + E_\textnormal{pkt} \cdot \frac{r}{8 \cdot S_\text{tot}}
-\end{equation}
-\begin{equation}
-	\Rightarrow \frac{P_{\textnormal{dyn,port}}}{\partial r} = E_\textnormal{bit} + \frac{E_\textnormal{pkt}}{8 \cdot S_\text{tot}}
-	\label{impl2}
-\end{equation}
+\begin{figure}
 
-Since, the size $S$ is controlled, we have that Eq. (\ref{impl1}) is the same as to Eq. (\ref{impl2}), the following equation holds 
+	\subfloat[]{\label{fig:powerexplA}
+		\begin{tikzpicture}[scale=0.49]
 
-\begin{equation}
-	E_\textnormal{bit} \cdot 8S + E_\textnormal{bit} \cdot 8S_h + E_\textnormal{pkt} = \alpha_S \cdot 8 \cdot S_\text{tot}
-	\label{eq:final}
-\end{equation}
+			% --- Grid/Axes Setup ---
+			\draw[->, thick] (0,0) -- (6.5,0) node[below=6pt, pos=0.5] {\small $r$ (bps)};
+			\draw[->, thick] (0,0) -- (0,5.5) node[left=9pt, rotate=90, pos=1.1] {\small $P_{\textnormal{\textbf{Snake}}}$ (Watts)};
+			\node (a) at (-0.2, 1) { \footnotesize $ P_{\text{\textbf{Trx}}} + P_{\text{offset}}$};
+			\draw[thick, color=black] (0,1.5) -- (6,5) ;
+			% network Line 
+			\draw[thick, color=black] (0,1.5) -- (6,4) ;
+			% compute Line 
+			\draw[thick, color=black] (0,1.5) -- (6,3) ;
+			\draw[dashed, blue!50, thick, ->] (2, 3) -- (3, 2) 
+			node[right, blue, font=\small] {increasing $L$};
+			% "Slope" annotation with curved arrow
+			\node (slope_text) at (3, 5) { \small $\text{Slope} = E_{\text{tot}}$};
+			\draw[thick, ->, >=stealth] (slope_text.south west) to [out=-90, in=140] (4, 4);
+		\end{tikzpicture}
+	}
+	\subfloat[]{\label{fig:powerexplB}
+		\begin{tikzpicture}[scale=0.49]
+			% --- Grid/Axes Setup ---
+			\node (a) at (-0.5, 1.5) { \small $ E_{\text{bit}}$};
+			\draw[->, thick] (0,0) -- (6.5,0) node[below=6pt, pos=0.5] {\small $L$ (bits)};
+			\draw[->, thick] (0,0) -- (0,5.5) node[left=9pt, rotate=90, pos=1.1] {\small $E_{tot}$ (Joules)};
+			\draw[thick, color=black] (0,1.5) -- (6,5) ;
+			% "Slope" annotation with curved arrow
+			\node (slope_text) at (3, 5) { \small $\text{Slope} = E_{\text{pkt}}/8$};
+			\draw[thick, ->, >=stealth] (slope_text.south west) to [out=-90, in=140] (4, 4);
+		\end{tikzpicture}
+	}
+	\caption{Linear behaviour of the power consumption (a) and the total energy $E_\textnormal{tot} = E_\textnormal{bit} \cdot r + E_\textnormal{pkt} \cdot r/(8 \cdot L_\text{tot})$ (b).}\label{fig:powerexpl}
+\end{figure}
+
+The expected behaviour of the variation of $L$ and $r$ for $P_{\textnormal{\textbf{Snake}}}$ is shown in Figure \ref{fig:powerexplA}.
+The power linearly increases with $r$ and $L$ defines the slope of the increase, as increasing $L$ decreases $E_\textnormal{tot}$ which is depicted in Figure \ref{fig:powerexplB}. 
 
 To derive $E_\textnormal{bit}$ and $E_\textnormal{bit}$, two steps are required.
 
-First, $P_\textnormal{\textbf{Snake}}$ measurements  are made for a fixed size $S$ by varying the bit rate $r$, this permits to derive $\alpha_S$ as the slope of the linear regression over $r$ of the measured $P_\textnormal{\textbf{Snake}}$.
-Repeating this process for multiple values of $S$ gives a set of couples ($S_i$, $\alpha_{Si}$) which allows computing multiples values of the right-hand side of Eq. (\ref{eq:final}) in relations to the corresponding $S$.
-This process results in a set of packet body size coupled  with their total corresponding energy consumption (left-hand side of Eq. (\ref{eq:final})).
+First, measure $P_\textnormal{\textbf{Snake}}$ for a fixed length $L$ by varying the bit rate $r$ to derive $E_\textnormal{tot}$ as the slope of the linear regression over $r$.
+Repeating this process for multiple values of $L$ gives a set of couples ($L_i$, $E_{i\textnormal{tot}}$).
 
-Second, from the latter computed set, linear regression of the energy is once again used over $S$.
-The resulting intercept (resp. slope) represents $E_\textnormal{bit} \cdot 8S_h + E_\textnormal{pkt}$ (resp. $E_\textnormal{pkt} \cdot 8$) 
-As the prior method considers a single interface, both energy consumption are derived for each interface by dividing the slope $\alpha_S$ by the number of equally configured interfaces.   
+Second, from the latter computed set, linear regression of the energy is once again used over $L$.
+The resulting intercept (resp. slope) represents $E_\textnormal{bit}$ (resp. $E_\textnormal{pkt} / 8$).
 
-Finally, to keep the linear behaviour, the $P_\text{offset}$ is derived from the intercept $\beta_S$ of the regression of $P_\text{port,dyn}$ over r:
-\begin{equation}
-	P_\text{offset} = \beta_S - P_\text{Trx}
-\end{equation}
+As the prior method considers a single interface, both energy consumption are derived for each interface by dividing the slope $E_\textnormal{tot}$ by the number of equally configured interfaces.   
+
+Finally, to keep the linear behaviour, the $P_\text{offset}$ is derived from the intercept represented in Figure \ref{fig:powerexplA} of the regression of $P_\text{\textbf{Snake}}$ over $r$.
 This intercept is used as it perfectly aligns with the linear function and is already computed. 
 
 \subsection{Comparing power data sources}\label{sec:comparison} 
@@ -275,34 +335,7 @@ However, in Figure \ref{autob}, the PSU measurements do not even align with the 
 To draw a general conclusion, replication of the observations should be done.
 But from the available observations and results, it seems PSU measurements are untrustworthy.
 
-
-The last research question is addressed by comparing external measurements to the power model predictions.
-The approximations of the model are promising, though the model is precise is remains inaccurate, having an offset ranging from 2-3 W (Fig. \ref{autoa}, \ref{autoc}) to $\approx$20W (Fig. \ref{autob}).
-Some artifacts, such as, Figure \ref{autoa} October 22, are explained by maintenance taking down an interface, making the power model think that the transceiver was unplugged, although it might have not.  
-This led to an $\approx$13W drop which correlates to the 12W specified for the transceiver and the $\approx$1W of port power. 
-To address the last question, the power model does have some offset but looks to be a better predictor of power consumption than PSU measurements.
-
-
-\begin{table}[ht]
-	\caption{"Typical" power reported by datasheets compared to SNMP PSU measurements \cite{FantasticJoul}.}\label{datasheetsVsPSU}
-    \centering
-    \begin{tabular}{lccc}
-        \toprule
-        \diagbox{Router model}{Power values} & \shortstack{Measured \\ \textit{Median}} & \multicolumn{2}{c}{\shortstack{Datasheet \\ ``Typical''}} \\
-        \midrule
-        NCS-55A1-24H      & 358 W & 600 W & 40 \% \\
-        ASR-920-24SZ-M    & 73 W  & 110 W & 33 \% \\
-        NCS-55A1-24Q6H-SS & 285 W & 400 W & 28 \% \\
-        NCS-55A1-48Q6H    & 346 W & 460 W & 24 \% \\
-        ASR-9001          & 335 W & 425 W & 21 \% \\
-        N540-24Z8Q2C-M    & 159 W & 200 W & 20 \% \\
-        8201-32FH         & 359 W & 288 W & {\color{red}-24} \% \\
-        8201-24H8FH       & 296 W & 205 W & {\color{red}-44} \% \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{figure*}
+\begin{figure*}[ht]
 	\centering
 	\subfloat{
 		\begin{tikzpicture}[font=\sffamily\large]
@@ -334,12 +367,68 @@ To address the last question, the power model does have some offset but looks to
 	}
 	\hspace{0pt}
 	\subfloat[N540X-8Z16G-SYS-A]{\label{autoc}
-		\includegraphics[width=0.31\textwidth]{figures/auto1.pdf}
+		\includegraphics[width=0.31\textwidth]{figures/auto3.pdf}
 	}
 	\caption{Comparison of power model predictions with PSU and external power measurements. PSU measurements in Figure \ref{autoc} are missing because the router does not report its power draw.}\label{fig:autopowerresults}
 \end{figure*}
 
+The last research question is addressed by comparing external measurements to the power model predictions.
+The approximations of the model are promising, though the model is precise is remains inaccurate, having an offset ranging from 2-3 W (Fig. \ref{autoa}, \ref{autoc}) to $\approx$20W (Fig. \ref{autob}).
+Some artifacts, such as, Figure \ref{autoa} October 22, are explained by maintenance taking down an interface, making the power model think that the transceiver was unplugged, although it might have not.  
+This led to an $\approx$13W drop which correlates to the 12W specified for the transceiver and the $\approx$1W of port power. 
+To address the last question, the power model does have some offset but looks to be a better predictor of power consumption than PSU measurements.
+
+
+\begin{table}[ht]
+	\caption{"Typical" power reported by datasheets compared to SNMP PSU measurements \cite{FantasticJoul}.}\label{datasheetsVsPSU}
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        \diagbox{Router model}{Power values} & \shortstack{Measured \\ \textit{Median}} & \multicolumn{2}{c}{\shortstack{Datasheet \\ ``Typical''}} \\
+        \midrule
+        NCS-55A1-24H      & 358 W & 600 W & 40 \% \\
+        ASR-920-24SZ-M    & 73 W  & 110 W & 33 \% \\
+        NCS-55A1-24Q6H-SS & 285 W & 400 W & 28 \% \\
+        NCS-55A1-48Q6H    & 346 W & 460 W & 24 \% \\
+        ASR-9001          & 335 W & 425 W & 21 \% \\
+        N540-24Z8Q2C-M    & 159 W & 200 W & 20 \% \\
+        8201-32FH         & 359 W & 288 W & {\color{red}-24} \% \\
+        8201-24H8FH       & 296 W & 205 W & {\color{red}-44} \% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
 \subsection{Insights in router power}\label{sec:insight} 
+\begin{table*}[ht]
+    \small
+	\caption{Example of power model derived parameters using Section \ref{sec:model}'s methodology from the article \cite{FantasticJoul}.\\
+		\scriptsize
+		$^{\dagger}$: Due to the interface’s low speed, the observable power variation with traffic is very small, rendering the derivation of $E_\text{bit}$ and $E_\text{pkt}$ imprecise.
+The resulting errors matter little for the same reason: traffic-induced power is small on this device. }\label{tab:params}
+
+    \centering
+    \begin{tabular}{lllcccccccc}
+        \toprule
+        & Port & Trans. & Speed & $P_{\text{base}}$ [W] & $P_{\text{port}}$ [W] & $P_{\text{trx,in}}$ [W] & $P_{\text{trx,up}}$ [W] & $E_{\text{bit}}$ [pJ] & $E_{\text{pkt}}$ [nJ] & $P_{\text{offset}}$ [W] \\
+        \midrule
+        (a) & \multicolumn{10}{l}{NCS-55A1-24H} \\
+            & QSPF28 & Passive DAC & 100G & 320 & 0.32 & 0.02 & 0.19 & 22 & 58 & 0.37 \\
+            & $|$    & $|$         & 50G  & -   & 0.18 & 0.02 & 0.16 & 21 & 57 & 0.34 \\
+            & $|$    & $|$         & 25G  & -   & 0.10 & 0.02 & 0.08 & 21 & 55 & 0.21 \\
+        \midrule
+        (b) & \multicolumn{10}{l}{Nexus9336-FX2} \\
+            & QSFP28 & LR          & 100G & 285 & 1.9  & 2.79 & -0.06 & 8  & 24 & -0.43 \\
+            & $|$    & Passive DAC & 100G & 285 & 1.13 & 0.09 & -0.02 & 8  & 26 & 0.07  \\
+        \midrule
+        (c) & \multicolumn{10}{l}{8201-32FH} \\
+            & QSFP   & Passive DAC & 100G & 253 & 0.94 & 0.35 & 0.21  & 3  & 13 & -0.04 \\
+        \midrule
+        (d) & \multicolumn{10}{l}{N540X-8Z16G-SYS-A} \\
+            & SFP    & T           & 1G   & 33  & -0.0 & 3.41 & 0.0   & 37 & -48$^{\dagger}$ & 0.01 \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
 From the resulting dataset multiple insights on router power consumption are derived. 
 
 \textbf{Turning an interface DOWN is not turning it OFF}.
@@ -375,35 +464,6 @@ Without detailing their preliminary work, they found that scaling properly and h
 Their work, tho exploratory, presents interesting savings and foster the idea of increasing PSU conversion efficiency and using reducing their number.
 Their experiments and the related power savings figures in Table \ref{tab:psu}.  
 
-\begin{table*}[ht]
-    \small
-	\caption{Example of power model derived parameters using Section \ref{sec:model}'s methodology from the article \cite{FantasticJoul}.\\
-		\scriptsize
-		$^{\dagger}$: Due to the interface’s low speed, the observable power variation with traffic is very small, rendering the derivation of $E_\text{bit}$ and $E_\text{pkt}$ imprecise.
-The resulting errors matter little for the same reason: traffic-induced power is small on this device. }\label{tab:params}
-
-    \centering
-    \begin{tabular}{lllcccccccc}
-        \toprule
-        & Port & Trans. & Speed & $P_{\text{base}}$ [W] & $P_{\text{port}}$ [W] & $P_{\text{trx,in}}$ [W] & $P_{\text{trx,up}}$ [W] & $E_{\text{bit}}$ [pJ] & $E_{\text{pkt}}$ [nJ] & $P_{\text{offset}}$ [W] \\
-        \midrule
-        (a) & \multicolumn{10}{l}{NCS-55A1-24H} \\
-            & QSPF28 & Passive DAC & 100G & 320 & 0.32 & 0.02 & 0.19 & 22 & 58 & 0.37 \\
-            & $|$    & $|$         & 50G  & -   & 0.18 & 0.02 & 0.16 & 21 & 57 & 0.34 \\
-            & $|$    & $|$         & 25G  & -   & 0.10 & 0.02 & 0.08 & 21 & 55 & 0.21 \\
-        \midrule
-        (b) & \multicolumn{10}{l}{Nexus9336-FX2} \\
-            & QSFP28 & LR          & 100G & 285 & 1.9  & 2.79 & -0.06 & 8  & 24 & -0.43 \\
-            & $|$    & Passive DAC & 100G & 285 & 1.13 & 0.09 & -0.02 & 8  & 26 & 0.07  \\
-        \midrule
-        (c) & \multicolumn{10}{l}{8201-32FH} \\
-            & QSFP   & Passive DAC & 100G & 253 & 0.94 & 0.35 & 0.21  & 3  & 13 & -0.04 \\
-        \midrule
-        (d) & \multicolumn{10}{l}{N540X-8Z16G-SYS-A} \\
-            & SFP    & T           & 1G   & 33  & -0.0 & 3.41 & 0.0   & 37 & -48$^{\dagger}$ & 0.01 \\
-        \bottomrule
-    \end{tabular}
-\end{table*}
 
 \begin{table*}[ht]
 
