@@ -174,12 +174,93 @@ Bruno \textsc{Quoitin}\\[3mm]
 
 % \include{sections/NetDice}
 %
-% \include{sections/NetPowProp}
+\include{sections/NetPowProp}
 
-\include{sections/FantJoul}
+% \include{sections/FantJoul}
 
 
+% ==============================================
+% here lies the appendix
+\appendix
 
+\subsection{Attempt at reproducing paper's result}\label{app:attempt}
+
+\begin{figure}[t]
+	\centering
+	\subfloat{
+		\centering
+		\begin{tikzpicture}[
+			square/.style={minimum size=0.6cm, inner sep=0pt},
+			label_text/.style={anchor=west}, scale=0.2]
+			% --- First Column ---
+			\node[square, fill=Fuchsia] (s1) {};
+			\node[label_text] at (s1.east) {GPU and Servers};
+			\node[square, fill=BrickRed, below=0.3cm of s1] (s2) {};
+			\node[label_text] at (s2.east) {Transceivers};
+
+			% --- Second Column ---
+			% Positioned 4cm to the right of the first column
+			\node[square, fill=ForestGreen, right=3cm of s1] (s3) {};
+			\node[label_text] at (s3.east) {NICs};
+
+			\node[square, fill=Turquoise, below=0.3cm of s3] (s4) {};
+			\node[label_text] at (s4.east) {Switches};
+		\end{tikzpicture}	
+	}
+
+	\hspace{-2cm}
+	\subfloat[Computation phase]{
+		\centering
+		\donutchart[rotate=90, scale=0.7]{84.3/Fuchsia/GPU and Servers, 4.3/Turquoise/Switchs, 3.8/BrickRed/Transceivers, 8.6/ForestGreen/NICs}{8.9 MW}
+	}
+	\hspace{-1cm}
+	\subfloat[Communication phase]{
+		\centering
+		\donutchart[rotate=90, scale=0.7]{40.4/Fuchsia/GPU and Servers, 15.4/Turquoise/Switchs, 30.5/BrickRed/Transceivers, 13.7/ForestGreen/NICs}{2.8 MW}
+	}
+	\caption{Calculated attempt at power footprint of the examined ML cluster.}\label{fig:ownPowFootprint}
+\end{figure}
+
+
+An attempt at reproducing the article's results on numbers of networks resources is presented in Table \ref{tab:PowAttempt}. 
+In this attempt, the same formulas \cite{Demy} are used in addition to a visualiser \cite{fatTreeVis}. A clear problem of using those formulas is that it assumes an even distribution of upstream and downstream ports which isn't the case for the considered switches with 60 upstream and 128 downstream ports. The number of ports in this attempt is considered to be 188.  
+The number of switches is interpolated linearly between the two found bounds of layers in which the number of hosts belong.
+\begin{definition}[linear interpolation]
+	Given $l$ and $u$ the lower and upper bound of layers such that\\
+	$H_l$ and $H_u$ the numbers of hosts for the lower and upper bounds contains $H$ the number of host to connect.\\
+	i.e. $H_l \leq H \leq H_u$ \\
+	Given $S_l$ and $S_u$ the number of switches used in the fat tree topology with the lower and upper bound layers.  
+
+	The total number of switches is :
+	$$ S_{tot} = \frac{H - H_l}{H_u - H_l} \times (S_u - S_l) + S_l$$
+	
+\end{definition}
+The linear interpolation is a considerable oversimplification, as networking infrastructures scales in discrete steps.
+
+For example, for the 400Gbps case, which is the configuration of the Alibaba pod\cite{MLCluster}, the 15 000 hosts have to be connected with 2 links, as the switches use 200G downstream ports. 
+For the calculation, due to the necessity to double the links at each host, 30K hosts are considered resulting in $u = 3$, $l = 2$ as $H_u = 1,882,384$ and $H_l = 19,208$. This leads to $S_u = 48,020$ and $S_l = 294$ giving $S_{tot} = 570.44$ rounded to $S_{tot} = 571$.
+The transceivers are calculated in the same manner replacing $S_u$ and $S_l$ by $T_u$ and $T_l$ the lower and upper number of transceivers between switches.
+
+The resulting power footprint of the computed attempt is presented in Figure \ref{fig:ownPowFootprint}.
+
+In comparison, the attempt at reproducing the article's results is presented in Figure \ref{fig:PowFootprint}. 
+The main difference is the number of switches making the number of transceivers explode in the attempt.
+
+\begin{table}[t]
+	\caption{Assumed number of network resources depending on the bandwidth.}\label{tab:PowAttempt}
+	\centering
+		\begin{tabular}[c]{cccccc}
+			\toprule
+			\textbf{Bandwidth(Gbps)} & \textbf{100} & \textbf{200} & \textbf{400} & \textbf{800} & \textbf{1600} \\
+			\hline
+			\textbf{switches} & 239 & 239 & 571 & 1339 & 2876 \\ 
+			\hline
+			\textbf{transceivers} & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
+			\bottomrule
+		\end{tabular}
+\end{table}
+
+% my attempt at it
 
 {
 \hfuzz 50pt 
