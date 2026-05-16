@@ -9,3 +9,7 @@
 {"rule":"PLEASE_BE_VB","sentence":"^\\QOne has to ensure the variation of the number of ports does not activate and interface, both end ports of an interface should never be UP at the same time.\\E$"}
 {"rule":"PLEASE_BE_VB","sentence":"^\\QThe variation of the number of ports should not activate and interface, both end ports of an interface should never be UP at the same time.\\E$"}
 {"rule":"PLEASE_BE_VB","sentence":"^\\QAn important consideration is that the variation of the number of ports should not activate and interface, both end ports of an interface should never be UP at the same time.\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QHot edges for static routes and shortest path HotSpStatic u, d, \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q, \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q, \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q initial shortest path \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q end nodes of static route\\E$"}
+{"rule":"THE_SUPERLATIVE","sentence":"^\\QConsidering ECMP, there might be multiple equal-cost shortest paths\\E$"}
+{"rule":"REP_PASSIVE_VOICE","sentence":"^\\QFinally, the results of NetDice's usage on synthetic configurations and nation-level ISP are presented (Section \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q).\\E$"}
+{"rule":"REP_PASSIVE_VOICE","sentence":"^\\QThen the probability model and computation is discussed in Section \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q and Section \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q presents the final implementation.\\E$"}

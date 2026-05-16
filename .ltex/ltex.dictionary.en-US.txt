@@ -1,4 +1,5 @@
 SerDes
+specialised
 behaviour
 Autopower
 pJ
@@ -29,3 +30,13 @@ reconfigurations
 Amdahl
 transitionning
 OCSs
+NetDice
+iBGP
+eBGP
+Alg
+ECMP
+unreachability
+cold iff
+analysers
+Mutli-Flow
+Alg

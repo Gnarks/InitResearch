@@ -30,10 +30,10 @@
 % start of the introduction
 \noindent
 Ensuring network configurations correctness of specific properties (\textit{e.g.} reachability) in a scalable and precise manner is an important problem interesting ISPs and large companies.
-This problem, due to the scale of the deployed networks in such facilities and complex interdependencies between routing protocols, goes beyond the capabilities of current network analysers. 
-As they would have to determine all failure scenarios for which the property is violated.  
-However, enforcing a property at all time often isn't necessary, as the concern is rather on the fraction of the time or the probability of the property to hold.
-\improvement[inline]{talk about the five 9's and SLA's}
+This problem, due to the scale of the deployed networks in such facilities and complex interdependencies between routing protocols, goes beyond the capabilities of current network analysers, as, they would have to determine all scenarios for which the property is violated.  
+Furthermore, enforcing a property at all time is not often necessary, as the concern is rather on the fraction of the time or the probability of the property to hold.
+These properties typically emerges from Service Level Agreements (SLA), defined with a respect to a certain metric and holding for a certain fraction of the time.
+For example, an ISP could guarantee an internet reachability for $99.9999\%$ (five 9's) of the time.
 
 To address this problem, we explore the reasoning and implementation behind NetDice \cite{steffen2020netdice}, a probabilistic verification tool for networks configuration. 
 It supports modern protocols such as BGP, OSPF and ECMP as well as static routes.
@@ -43,10 +43,10 @@ Examples of properties and their meaning are represented in Table \ref{tab:props
 
 The key insight of NetDice and the reason of its capacity to handle ISP's network scale is an inference algorithm to efficiently explore link failures scenario. 
 To this end, the concept of cold edges is introduced in Section \ref{sec:HotEdges}.
-Those edges are used to prune the failure scenarios exploration as, for a certain configuration, their failures are guaranteed not to change whether a property holds or not.     
-
-This exploration and its pruning mechanism is further explained in Section \ref{sec:explo}. 
-Then the probability model and computation is discussed in Section \ref{sec:ProbFailMod} and Section \ref{sec:implementation} presents the final implementation. 
+These edges are used to prune the failure scenarios exploration as, for a certain configuration, their failures are guaranteed not to change whether a property holds or not.     
+The exploration and the corresponding pruning mechanism is explained in Section \ref{sec:explo}. 
+To compute the probability of the property to hold, Section \ref{sec:ProbFailMod} details the probability model and the computing method.  
+Section \ref{sec:implementation} presents the final implementation. 
 
 Finally, the results of NetDice's usage on synthetic configurations and nation-level ISP are presented (Section \ref{sec:results}).
 
@@ -88,7 +88,7 @@ As those static routes deviate the forwarding graph and the end-node considers t
 Finally, every edge on traversed static route is added as hot (Lin.5), as a failure would clearly change the forwarding behavior.
 
 
-\begin{algorithm}[H]
+\begin{algorithm}[t]
   \floatname{algorithm}{Algorithm}
   \caption{Hot edges for static routes and shortest path}\label{alg:cold}
   \begin{algorithmic}[1]
@@ -177,7 +177,7 @@ As in the first algorithm, we need to mark as hot the edges along the shortest p
 In addition, the forwarding graph $E_{fwd}$ can deviate if two successive nodes along it differ in selected next-hop. As the shortest path of the first might not match the shortest path of the second as their selected next-hop may differ. To take this deviation into account, the edges along the shortest path of the second node towards its selected next-hop are marked as hot.
 Remark that, contrary to static traversed routes, the edge of the two successive nodes with different selected next-hops isn't manually marked hot, as it lies on the shortest path of the first node.
 Finally, the edge case where no route reflectors are reachable by $u$ is handled (Lin.12-13). In this case, the connectivity from $u$ towards every border router is required. So every shortest path from $u$ towards them is considered hot.
-The first property (i) is ensured by considering shortest paths. 
+The first property (i) is ensured by considering the shortest paths. 
 The second one is ensured because lines 5 to 10 make sure of the connectivity in the case of at least one route reflector in $X$. Where the lines 11 and 12 take care of the case where no route reflector lies in $X$.
 
 An example of the algorithm can be found in Figure \ref{fig:hotbgp}. The route reflectors are V and W with respectively \{E, D, C, B, W\} and \{F, B, H, V\} as their clients. The Border routers are E, A and C. There are no static routes and the flow is (B, E).
@@ -199,7 +199,7 @@ The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(ii
 	\caption{Computation of hot edges in a BGP capable network configuration.  The flow is $(B,d)$ with d the external BGP destination, LP represents the local preference of the announcements towards d. $B_R = {E,A,C}$, $R_R = {V,W}$ represented in purple, the selected next-hop is represented in green at each node. Hot edges are highlighted in red.}\label{fig:hotbgp}
 \end{figure*}
 
-\begin{algorithm}[H]
+\begin{algorithm}[t]
   \floatname{algorithm}{Algorithm}
   \caption{Hot edges for BGP}\label{alg.hotbgp}
   \begin{algorithmic}[1]
@@ -232,7 +232,6 @@ The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(ii
 
 
 \subsection{Exploration}\label{sec:explo}
-\improvement[inline]{add a figure of a failure scenario ?}
 The exploration of the failure space is done by only exploring possible failures of hot edges. 
 To explore the failure space, NetDice considers 3 possible states for an edge during the exploration process : 
 \begin{itemize}
@@ -245,7 +244,6 @@ Those states are only considered during the exploration process.
 In terms of forwarding graph computation, within a certain scenario, down edges are not considered usable whereas up and undefined are considered usable. 
 It is assumed that a \textit{check} function returning, given a property and forwarding graphs, if a property holds in every forwarding graph is implemented.
 In practice, it is implemented using variants of DFS depending on the property to check. 
-\improvement[inline]{add in appendix such algorithm}
 
 The exploration procedure can be described as follows : 
 \begin{enumerate}
@@ -298,7 +296,6 @@ In the example, only 16 failure scenarios are explored. In contrast to the $2^7 
   \caption{On top is the exploration of failure space and on the bottom the computation of the probability with $\phi =$ "Traffic from D to C traverses E". Crosses represent down links, padlocks represent up links and green arrow represent the forwarding graph. Absence of symbol represent undefined links. "Cold" in blue represent scenarios containing only cold edges.}\label{fig:execTree}
 \end{figure*}
 
-
 \subsection{Complex Link Failure Probability model} \label{sec:ProbFailMod}
 To compute the probability of a certain failure scenario, two mathematical tools are used :
 \begin{enumerate}
@@ -325,29 +322,8 @@ In the case of NetDice, BN variables are binary variables where the value 0 repr
 
 The motivation of BN to model the distribution is to have a very general and intuitive model. It is intuitive by its visual representation in a graph and general because it can represent any discrete probability distribution with arbitrary dependencies. In fact, by the chain rule, any joint discrete probability distribution can be decomposed without loss of generality to a product of conditional distribution which a BN models.
 
-Figure \ref{fig:BN} represents a simple network configuration with a BN modeling node failures.
-Assuming the probability of a node (resp. link) failure is 0.1 (resp. 0.01), it is possible to compute $P(L = l)$ for a certain failure scenario l. 
-For example to compute $P(L_{A-B} = 1, L_{B-C} = 0)$ the decomposition is the following.
-First, both the A and B  nodes must be 1, otherwise, their shared link would be down. As node failures are independent, we consider :
-\[P(A = 1) \times P(B = 1) \times P(L_{A-B} = 1 | A=1,B=1) \] 
-\[= 0.9^2 \times 0.99 \]
 
-Then 2 scenarios are possible, either C is up or down.
-
-If C is up :
-\[P(L_{B-C}=0~|~B=1,C=1) \times P(C =1) = 0.99 \times 0.9\]  
-
-If C is down : 
-\[P(L_{B-C}=0~|~B=1,C=0) \times P(C=0) = 1 \times 0.1\]  
-
-Summing the above scenarios gives $0.109$.
-
-Finally, taking the product of the sum and the marginals gives 
-\[P(L_{A-B} = 1, L_{A-C} = 0) = 0.109 \times 0.9^2 \times 0.99 = 0.0874071\]
-
-To compute $P(L)$ and its marginals efficiently, NetDice uses the algorithm of variable elimination \cite{VE}.
-
-\begin{figure}
+\begin{figure}[t]
 	\subfloat{
 		\centering
 		\begin{tikzpicture}[auto, on grid, thick, state/.style={circle, draw=black, minimum width = 1cm}]
@@ -378,35 +354,31 @@ To compute $P(L)$ and its marginals efficiently, NetDice uses the algorithm of v
 	\caption{On the top is a simple network configuration composed of 3 routers. On the bottom lies the Bayesian network modeling node and link failure for the configuration.}\label{fig:BN}
 \end{figure}
 
+Figure \ref{fig:BN} represents a simple network configuration with a BN modeling node failures.
+Assuming the probability of a node (resp. link) failure is 0.1 (resp. 0.01), it is possible to compute $P(L = l)$ for a certain failure scenario l. 
+For example to compute $P(L_{A-B} = 1, L_{B-C} = 0)$ the decomposition is the following.
+First, both the A and B  nodes must be 1, otherwise, their shared link would be down. As node failures are independent, we consider :
+\[P(A = 1) \times P(B = 1) \times P(L_{A-B} = 1 | A=1,B=1) \] 
+\[= 0.9^2 \times 0.99 \]
+
+Then 2 scenarios are possible, either C is up or down.
+
+If C is up :
+\[P(L_{B-C}=0~|~B=1,C=1) \times P(C =1) = 0.99 \times 0.9\]  
+
+If C is down : 
+\[P(L_{B-C}=0~|~B=1,C=0) \times P(C=0) = 1 \times 0.1\]  
+
+Summing the above scenarios gives $0.109$.
+
+Finally, taking the product of the sum and the marginals gives 
+\[P(L_{A-B} = 1, L_{A-C} = 0) = 0.109 \times 0.9^2 \times 0.99 = 0.0874071\]
+
+To compute $P(L)$ and its marginals efficiently, NetDice uses the algorithm of variable elimination \cite{VE}.
+
+
 
 \subsection{Implementation}\label{sec:implementation}
-The following Section presents the NetDice's algorithm to compute the probability of a property given a network configuration and a probability distribution. 
-The algorithm, presented in Alg \ref{alg:BGPExplo}, uses the notion of states in which a link can be up (1), down (0) or undefined (?).
-As previously stated, only the up and undefined links are considered traversable to check if the property holds. 
-
-Three functions are used by the algorithm.
-\begin{definition}{$\textnormal{Scenario}(s, T)$} returns the corresponding failure scenario of the state $s$ by setting every undefined link in the subset $T \subseteq E$ to be up.
-\end{definition}
-
-\begin{definition}$\textnormal{Check}(\phi~,~(V^1_{fwd},E^1_{fwd}),\dots,(V^n_{fwd},E^n_{fwd}))$
-	returns, given a property and a set of forwarding graphs, if the property holds in every forwarding graph.   
-\end{definition}
-
-\begin{definition}$\textnormal{Prob}(s)$
-	returns, given a scenario $s$ the marginal probability defined over the defined states (either up or down). 
-\begin{flalign}
-i.e. && P(\wedge_{e \in E ~ \textnormal{s.t. s(e) $\neq$ ?}} L_e = s(e) )&&\phantom{}
-\end{flalign}
-\end{definition}
-
-As mutli-flow properties are supported, the check function has to work on a set of forwarding graphs.  
-
-The algorithm initialises by computing a forwarding graph per flow in the property and computing its hot edges set (Lin. 3-5).
-Then the undefined hot edges, as the scenario with their failure should be explored, are computed (Lin. 6). 
-If the property is satisfied in every forwarding graph, the probability of the actual scenario is computed.
-To do so, the probability of the scenario with undefined links in the set of undefined hot edges set to 1 is computed (Lin. 7-8).
-Since, a failure in any of them will change the forwarding graph possibly changing if the property holds.  
-The exploration of the undefined hot edges is done in Lines 10 to 13 and algorithm returns the sum of the marginal probabilities of explored states where $\phi$ holds. 
 
 \begin{algorithm}[t]
   \floatname{algorithm}{Algorithm}
@@ -440,8 +412,78 @@ The exploration of the undefined hot edges is done in Lines 10 to 13 and algorit
 
   \EndProcedure
   \end{algorithmic}
+
+  \label{alg:finalImpl}
 \end{algorithm}
+The following Section presents the NetDice's algorithm to compute the probability of a property given a network configuration and a probability distribution. 
+The algorithm, presented in Alg \ref{alg:BGPExplo}, uses the notion of states in which a link can be up (1), down (0) or undefined (?).
+As previously stated, only the up and undefined links are considered traversable to check if the property holds. 
+
+Three functions are used by the algorithm.
+\begin{definition}{$\textnormal{Scenario}(s, T)$} returns the corresponding failure scenario of the state $s$ by setting every undefined link in the subset $T \subseteq E$ to be up.
+\end{definition}
+
+\begin{definition}$\textnormal{Check}(\phi~,~(V^1_{fwd},E^1_{fwd}),\dots,(V^n_{fwd},E^n_{fwd}))$
+	returns, given a property and a set of forwarding graphs, if the property holds in every forwarding graph.   
+\end{definition}
+
+\begin{definition}$\textnormal{Prob}(s)$
+	returns, given a scenario $s$ the marginal probability defined over the defined states (either up or down). 
+\begin{flalign}
+i.e. && P(\wedge_{e \in E ~ \textnormal{s.t. s(e) $\neq$ ?}} L_e = s(e) )&&\phantom{}
+\end{flalign}
+\end{definition}
+
+As mutli-flow properties are supported, the check function has to work on a set of forwarding graphs.  
+
+The algorithm initialises by computing a forwarding graph per flow in the property and computing its hot edges set (Lin. 3-5).
+Then the undefined hot edges, as the scenario with their failure should be explored, are computed (Lin. 6). 
+If the property is satisfied in every forwarding graph, the probability of the actual scenario is computed.
+To do so, the probability of the scenario with undefined links in the set of undefined hot edges set to 1 is computed (Lin. 7-8).
+Since, a failure in any of them will change the forwarding graph possibly changing if the property holds.  
+The exploration of the undefined hot edges is done in Lines 10 to 13 and algorithm returns the sum of the marginal probabilities of explored states where $\phi$ holds. 
+
 
 
 \subsection{Results} \label{sec:results}
-% talk about the results achieved by the paper
+
+\begin{figure}[t]
+	\subfloat{
+	\includegraphics[width=0.70\columnwidth]{figures/netdiceSynth.pdf}
+	}
+	\subfloat{
+	\includegraphics[width=0.24\columnwidth]{figures/netdiceReal.pdf}
+	}
+
+	\caption{Runtime for verifying a single-flow waypoint property on synthetic topologies (left) and real ISP configuration (right)}\label{fig:netdiceTests}
+\end{figure}
+
+
+\textbf{Synthetic tests} of NetDice's implementation are done on data composed of 90 topologies containing between 19 (resp. 50) and 754 (resp. 2 320) nodes (resp. links). 
+A link weight of 1 is set for every link.
+The probability of node (resp. link) failure used is 0.0001 (resp. 0.001).
+Regarding BGP configurations, as they are not present in the original topologies, synthetic BGP setups with 2 route reflectors and 10 border routers with 2 external peers each is created. 
+External BGP announcements are created to represent the worst case scenario, where the Top3 algorithm does not prune any announcement.
+It implies that the number of border routers considered $B_{Rl}$ is maximal, resulting in a large hot set in Lin. 5 of Alg \ref{alg.hotbgp}. 
+
+The runtime measurements are made on a verification of a random waypoint property of a single random flow with a target imprecision of $10^{-4}$ (representing four 9's).  
+They are run 10 times with new random choices for every topology.  
+
+Figure \ref{fig:netdiceTests} left represents the maximum and median of the 10 runs for each topology.
+Although the runtime of larger networks is clearly higher than smaller networks, most of them can be verified within 1h.
+Only 18, out of the 90, topologies require at least 1h to be verified. 
+
+A key insight on the runtime is that it is dominated by the Variable Elimination (VE) (Lin. 8 of Alg. \ref{alg:finalImpl}), as removing node failures yields an 5 to 10 factor improvement. 
+While this comes at a cost for the expressiveness of the model, the performance could be improved by using more advanced or specialised algorithms.
+
+\textbf{A real world configuration test} is conducted on an undisclosed nation-level ISP configuration comprising around 100 nodes and 180 links.
+The test is conducted by verifying a random single-flow waypoint property on 10 runs, with a target imprecision of $10^{-4}$ and the worst-case BGP announcements.  
+Figure \ref{fig:netdiceTests} right represents the summary of the test.
+
+
+
+
+\subsection{Conclusion}
+
+
+
