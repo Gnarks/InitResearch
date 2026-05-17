@@ -2,12 +2,12 @@
 \section{Probabilistic Verification of Network Configuration}\label{sec:NetDice}
 
 \subsection{Introduction}
-{
-\hbadness 10000
 \begin{table*}
+\hbadness 10000
+\hfuzz=5pt
   \caption{Properties supported by NetDice}\label{tab:props}
   \begin{center}
-    \begin{tabularx}{0.77\textwidth}{c l l}
+    \begin{tabularx}{0.86\textwidth}{c l l}
 
       & \textbf{Property} & \textbf{Meaning} \\
       \toprule
@@ -18,27 +18,25 @@
 
       \hline
       \multirow{3}{*}{\rotatebox[origin=c]{90}{Mutli-Flow}}
-      & $Balanced_{F}(\mathcal{L}, \Delta)$ & Under flows $F$ with given volumes, the load
+      & $Balanced_{F}(\mathcal{L}, \Delta)$ & Under flows $F$ with associated traffic volume, the load
       on the links in $\mathcal{L}$ differs by at most $\Delta$ \\
       & $Isolation_{F}$ & Set of flows in $F$ doesn't share any links \\
-      & $Congestion_{F}(l, t)$ & Together, all flows in $F$ with their volume don't exceed threshold $t$ for link $l$ \\
+      & $Congestion_{F}(l, t)$ & The addition of every traffic from every flow in $F$ do not exceed threshold $t$ for link $l$ \\
 	  \bottomrule
     \end{tabularx}
   \end{center}
 \end{table*}
-}
 % start of the introduction
-\noindent
 Ensuring network configurations correctness of specific properties (\textit{e.g.} reachability) in a scalable and precise manner is an important problem interesting ISPs and large companies.
 This problem, due to the scale of the deployed networks in such facilities and complex interdependencies between routing protocols, goes beyond the capabilities of current network analysers, as, they would have to determine all scenarios for which the property is violated.  
-Furthermore, enforcing a property at all time is not often necessary, as the concern is rather on the fraction of the time or the probability of the property to hold.
+Furthermore, enforcing a property at all time is not often necessary, as the concern is rather on the probability or the fraction of time of the property to hold.
 These properties typically emerges from Service Level Agreements (SLA), defined with a respect to a certain metric and holding for a certain fraction of the time.
 For example, an ISP could guarantee an internet reachability for $99.9999\%$ (five 9's) of the time.
 
 To address this problem, we explore the reasoning and implementation behind NetDice \cite{steffen2020netdice}, a probabilistic verification tool for networks configuration. 
 It supports modern protocols such as BGP, OSPF and ECMP as well as static routes.
 The model of NetDice uses link failures and their probability to compute the probability of a property to hold.  
-Such properties can be either expressed as single or multiple-flow considering a flow to be a pair of source and destination IP address.
+Such properties typically aim at representing SLA's and can be either expressed as single-flow or multiple-flow considering a flow to be a pair of source and destination IP address.
 Examples of properties and their meaning are represented in Table \ref{tab:props}. 
 
 The key insight of NetDice and the reason of its capacity to handle ISP's network scale is an inference algorithm to efficiently explore link failures scenario. 
@@ -51,66 +49,47 @@ Section \ref{sec:implementation} presents the final implementation.
 Finally, the results of NetDice's usage on synthetic configurations and nation-level ISP are presented (Section \ref{sec:results}).
 
 \subsection{Cold Edges}\label{sec:HotEdges}
+
 This section aims at introducing the concept of cold edges.
 Initially presenting their definition and computation in a local access network (LAN) considering internal static routes and ECMP.
 Then BGP is incorporated to the model to allow NetDice to reason with external peers.  
 
 As equal-cost multiple path routing (ECMP) is a supported protocol, flows in a network can take multiples paths if they share the same cost.
-To represent such behavior, a forwarding graph, composed of $V_{fwd}$ a set of vertices (routers) and $E_{fwd}$ a set of directed edges (links), is used.
-A forwarding graph can be altered by link failures represented by a failure scenario which is a set of unusable links in the network configuration.   
-
-\begin{definition}
-  Given a network configuration with a certain failure scenario, a property $\phi$ and a flow $(u, d)$, a subset of edges $\mathcal{C}$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called cold if it belongs to $\mathcal{C}$ and hot otherwise.
-\end{definition}
-
-In practice, hot edges are used to prune the exploration of the possible failure scenarios.
-Intuitively, as they impact the forwarding graph, we only explore failure scenarios where hot edges fail to avoid redundant scenarios due to the unchanged forwarding graphs.
-As, if the forwarding graph does not change, a cold link could be up or down, the property won't change.
-Hence, The scenarios exploring cold links are disregarded.
-
-\textbf{In a LAN scenario} : An algorithm to compute hot edges considering the shortest paths and  static routes is presented in Alg.\ref{alg:cold}.
-It takes a flow $(u,d)$,  the set of static routes $Static_d \subseteq V\times V$ towards a destination $d$, a forwarding graph's edges $E_{fwd}$ considering the static routes and a failure scenario $l$ as parameters. 
-
-Because the property violation depends on forwarding graphs, it is sufficient to consider as hot any edge that may vary the forwarding graph. 
-Hence, all edges along the shortest path and the traversed static routes are hot as a failure in any of them would change if $\phi$ holds due to unreachability or changes in the forwarding graph. 
-
-To compute the edges along the shortest path we define two algorithms : 
-\begin{definition}$\textnormal{SP}_l(s,t)$
-	returns the set of all edges along the shortest paths\footnote{Considering ECMP, there might be multiple equal-cost shortest paths} from s to t, under link states defined by l.
-\end{definition}
-\begin{definition}$\textnormal{AllSP}_l({\mathcal{S}, \mathcal{T}})$
-	returns the union of  $\textnormal{SP}_l(s,t)$ for every $s \in \mathcal{S}$ and $t \in \mathcal{T}$.  
-\end{definition} \label{def:allsp}
-
-The algorithm starts by considering hot every edge along the shortest paths, considering the failure scenario $l$, from the source $u$ to the destination $d$(Lin.2).
-As the shortest path is considered by $u$, any failure in this shortest path will impact the decision of the source node hence the resulting forwarding graph. It holds even if the initially shortest path does not correspond to the final forwarding graph, as static routes can deviate the routing behavior. 
-As those static routes deviate the forwarding graph and the end-node considers the shortest path just as $u$ initially.
-Finally, every edge on traversed static route is added as hot (Lin.5), as a failure would clearly change the forwarding behavior.
-
+To represent such behaviour, a forwarding graph, composed of $V_\textnormal{fwd}$ a set of vertices (routers) and $E_\textnormal{fwd}$ a set of directed edges (links), is used.
+A forwarding graph can be altered by a link failure representing an unusable link in the configuration, which could be caused by a severed cable or a failing port.  
+Multiple link failures form a failure scenario $l$ which is a set containing the unusable links.
 
 \begin{algorithm}[t]
   \floatname{algorithm}{Algorithm}
   \caption{Hot edges for static routes and shortest path}\label{alg:cold}
   \begin{algorithmic}[1]
-    \Procedure{HotSpStatic}{u, d, $Static_d$, $E_{fwd}$, $l$}
+    \Procedure{HotSpStatic}{u, d, $Static_d$, $E_\textnormal{fwd}$, $l$}
 		\State $\mathcal{H} \leftarrow \textnormal{SP}_l(u, d)$ \Comment{initial shortest path}
-    \State $\mathcal{S} \leftarrow \{ y ~ | ~ (x, y) \in Static_d ~ \cap ~ E_{fwd} \}$ \Comment{end nodes of static route}
+    \State $\mathcal{S} \leftarrow \{ y ~ | ~ (x, y) \in Static_d ~ \cap ~ E_\textnormal{fwd} \}$ \Comment{end nodes of static route}
 
 		\State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ \textnormal{AllSP}_l(\mathcal{S}, \{d\})$ 
-    \State \textbf{return} $\mathcal{H} ~ \cup ~ (Static_d ~ \cap ~ E_{fwd})$ 
+    \State \textbf{return} $\mathcal{H} ~ \cup ~ (Static_d ~ \cap ~ E_\textnormal{fwd})$ 
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
-	
 
+Defining if a property holds in a certain configuration scenario strictly depends on forwarding graphs, as properties are defined for flows and verified for the internal path used to connect both ends of flows. 
+Leveraging the fact that a property holds only changes if the forwarding graphs change, NetDice's authors proposes the concept of cold and hot edges in Definition \ref{def:cold}.
 
-As an example, Figure \ref{fig:cold} represents the application of Alg \ref{alg:cold} giving the hot and cold edges of a certain network configuration considering no failure and a flow (D, C), the forwarding edges $E_{fwd} = \{(D,E),(E,B),(B,C)\}$ and the static routes towards $C$ $Static_C = \{(E,B)\}$.
-Note that the $(E,C)$ edge is marked as hot even though it is not in the forwarding graph because it lies on the shortest path of D. If it fails, the decision of D would be to use $D\rightarrow A\rightarrow B\rightarrow C$ as its shortest path, changing the forwarding graph.  
+\begin{definition}\label{def:cold}
+  Given a network configuration with a certain failure scenario and a flow $(u, d)$, a subset of edges $\mathcal{C}$ is cold iff any combination of failures in $\mathcal{C}$ is guaranteed not to change the forwarding graph for $(u, d)$. An edge is called cold if it belongs to $\mathcal{C}$ and hot otherwise.
+\end{definition}
 
+The separation between cold and hot edges can be used to explore only relevant failure scenarios, as exploring a scenario where the property does not change is redundant.
+In practice (Sec. \ref{sec:explo}), hot edges are used to prune the exploration of the possible failures scenarios.
+Intuitively, as they impact the forwarding graph, we only explore failure scenarios where hot edges fail to swiftly find scenarios where the property does not hold.
+Cold edges exploration are disregarded for a specific scenario, it is possible for a cold edge in a scenario to be hot in another one (See Fig. \ref{fig:execTree} (D, A) in (16) and (6)).  
+
+{
+\hfuzz 30pt
 \begin{figure}[t]
-	\centering
 	\subfloat{
-		\centering
+		\small
 		\begin{tabular}[l]{l l}
 			\multicolumn{2}{c}{\underline{Application of Alg \ref{alg:cold}}}\\
 			2: & $\mathcal{H} = \{(D,E),(E,C)\}$  \\
@@ -120,13 +99,43 @@ Note that the $(E,C)$ edge is marked as hot even though it is not in the forward
 			5: & $\mathcal{H} = \{(D,E),(E,C),(E,B),(B,C)\}$\\
 		\end{tabular}
 	}
-	\vfil
 	\subfloat{
-		\centering
-		\includegraphics[width=0.97\columnwidth]{figures/ColdStatic.png}
-		}
-		\caption{This example is from NetDice's article \cite{steffen2020netdice} it represents cold edges in a network configuration with no failures (i.e. all links up) and a flow (D, C). $(E,B)$ is a static route. Blue and red highlight show cold and hot edges respectively. The forwarding graph is represented by the red arrows.}\label{fig:cold}
+		\hspace*{-2cm}
+		\vspace*{-2cm}
+		
+		\includegraphics[trim={1cm 1cm 2cm 0.9cm},clip, width=0.45\columnwidth]{figures/ColdStatic.png}
+	}
+		\caption{This example is from NetDice's article \cite{steffen2020netdice}, it represents cold edges in a network configuration with no failures (i.e. all links up) and a flow (D, C). $(E,B)$ is a static route. Blue and red highlight show cold and hot edges respectively. The forwarding graph is represented by the red arrows.}\label{fig:cold}
 \end{figure}
+}
+
+\textbf{In a LAN scenario} : An algorithm to compute hot edges considering the shortest paths and  static routes is presented in Alg.\ref{alg:cold}.
+It takes a flow $(u,d)$,  the set of static routes $Static_d \subseteq V\times V$ towards a destination $d$, a forwarding graph's edges $E_\textnormal{fwd}$ considering the static routes and a failure scenario $l$ as parameters. 
+The static routes contained in $Static_d = \{(x_i,y_i)\}$ are used by the source $x_i$ to route traffic going towards $d$ to the defined "next-hop" $y_i$.      
+This can lead, as discussed beneath, to the rerouting of the initial shortest path considered by any traversed node, especially the source node of the flow $u$.
+
+Because the property violation depends on forwarding graphs, it is sufficient to consider as hot any edge that may vary the forwarding graph. 
+Hence, all edges along the shortest path and the traversed static routes are hot as a failure in any of them would change if $\phi$ holds due to unreachability or changes in the forwarding graph. 
+
+To compute the edges along the shortest path we define two algorithms : 
+\begin{definition}$\textnormal{SP}_l(s,t)$
+	returns the set of all edges along the shortest paths\footnote{Considering ECMP, there might be multiple equal-cost shortest paths} from $s$ to $t$, under link states defined by $l$.
+\end{definition}
+\begin{definition}$\textnormal{AllSP}_l({\mathcal{S}, \mathcal{T}})$
+	returns the union of  $\textnormal{SP}_l(s,t)$ for every source $s \in \mathcal{S}$ to every target $t \in \mathcal{T}$.  
+\end{definition} \label{def:allsp}
+
+
+The algorithm starts by considering hot every edge along the shortest paths, considering the failure scenario $l$, from the source $u$ to the destination $d$ (Lin.2).
+This is due to the fact that the shortest path is considered by $u$, so any failure in this shortest path will impact the decision of the source node, hence the resulting forwarding graph.
+It holds even if the initially shortest path computed by any source node does not correspond to the final forwarding graph, as static routes can deviate the routing behaviour.
+Because, any failure along the shortest path, even though it is not used in practice due to the rerouting of the forwarding graph, will change the routing behaviour of the node considering it. 
+Finally, every edge on traversed static route is added as hot (Lin.5), as a failure could change the forwarding behaviour.
+
+As an example, Figure \ref{fig:cold} represents the application of Alg \ref{alg:cold} giving the hot and cold edges of a certain network configuration considering every link as functional and a flow (D, C), the forwarding edges $E_\textnormal{fwd} = \{(D,E),(E,B),(B,C)\}$ and the static routes towards $C$ $Static_C = \{(E,B)\}$.
+Note that the $(E,C)$ edge is marked as hot even though it is not in the forwarding graph because it lies on the shortest path of D.
+If it were to fail, the decision of D would be to use $D\rightarrow A\rightarrow B\rightarrow C$ as its shortest path, changing the forwarding graph.  
+
 
 
 \begin{table}
@@ -163,31 +172,40 @@ There are 3 reasons why a link failure could change the selected next-hop of a n
 \end{enumerate}
 
 Considering those new possibilities for a forwarding graph to change, the algorithm to compute the hot edges have to assess two properties. (i) keeping the connectivity between BGP peers and (ii) the IGP costs towards a selected next-hop stay unchanged.
-So, in addition to the previous requirements, an edge is now hot if its failure would falsify one of those two properties.
+So, in addition to the previous requirements, an edge is now hot if its failure would falsify one of these two properties.
 
 
 The set of network border routers, route reflectors and external BGP nodes are represented respectively by $B_R$, $R_R$ and $E_{xt}$.\\
-The algorithm to compute the set of hot edges considering a certain failure scenario $l$, a flow $(u, d)$ and the forwarding graph $E_{fwd}$ is presented in	Alg.\ref{alg.hotbgp}.
+The algorithm to compute the set of hot edges considering a certain failure scenario $l$, a flow $(u, d)$ and the forwarding graph $E_\textnormal{fwd}$ is presented in	Alg.\ref{alg.hotbgp}.
 
 To reduce computation costs, only the set of nodes $X$ reachable with IGP by $u$ is considered (Lin.2).
-The algorithm uses the $\textnormal{ALLSP}$  from Definition \ref{def:allsp} and $\textnormal{TOP3}$ which returns, for a certain destination, the border routers announcing routes of with the same highest preference in the three first rules in the BGP decision process at Table \ref{tab:bgprocess} considering the subset of nodes $X$. It is used to filter out of the computation the border routers whose announcement won't be selected as the three first rules are global for a fixed BGP destination. 
-Its reasoning is similar to Alg.\ref{alg:cold} with the addition of the consideration for the connectivity and unchanged IGP cost properties.
-To make sure that all the route reflectors receive the announcements of the border routers, the edges along all the shortest paths between every route reflector and border router is marked hot (Lin.3-5).
-As in the first algorithm, we need to mark as hot the edges along the shortest paths of $u$ and the end-nodes of traversed static routes towards their selected next-hop(Lin.6-7).
-In addition, the forwarding graph $E_{fwd}$ can deviate if two successive nodes along it differ in selected next-hop. As the shortest path of the first might not match the shortest path of the second as their selected next-hop may differ. To take this deviation into account, the edges along the shortest path of the second node towards its selected next-hop are marked as hot.
+The algorithm uses $\textnormal{ALLSP}$ from Definition \ref{def:allsp} and another algorithm defined in Definition \ref{alg:top3}.
+
+\begin{definition}$\textnormal{Top3}(B_R,X)$\label{alg:top3}
+	returns, given subset of node $X$ and the border routers $B_R$, the subset of border routers $B_{Rl} \subseteq B_R$ announcing the highest preference routes globally.   
+\end{definition}
+
+It is used to filter out of the computation the border routers whose announcement will not be selected because the three first rules are global for a fixed BGP destination, or simply because they do not lie in $X$. 
+Its effect can be observed in Figure \ref{fig:hotbgp} (i) at the node C : it was filtered out of considered the border routers because its Local Preference (LP) is lower than A and O's announcements.  
+
+The reasoning of Alg.\ref{alg.hotbgp} is similar to Alg.\ref{alg:cold} with the addition of the consideration for the connectivity and unchanged IGP costs properties.
+To make sure that all route reflectors receive the announcements of the border routers, the edges along all the shortest paths between every route reflector and border router is marked hot (Lin.3-5).
+Similarly to the first algorithm, we need to mark as hot the edges along the shortest paths of $u$ and the end-nodes of traversed static routes towards their selected next-hop (Lin.6-7).
+In addition, the forwarding graph $E_\textnormal{fwd}$ can deviate if two successive nodes along it differ in selected next-hop, as the shortest path of the first might not match the shortest path of the second because their selected next-hop may differ.
+To take this deviation into account, the edges along the shortest path of the second node towards its selected next-hop are marked as hot.
 Remark that, contrary to static traversed routes, the edge of the two successive nodes with different selected next-hops isn't manually marked hot, as it lies on the shortest path of the first node.
 Finally, the edge case where no route reflectors are reachable by $u$ is handled (Lin.12-13). In this case, the connectivity from $u$ towards every border router is required. So every shortest path from $u$ towards them is considered hot.
 The first property (i) is ensured by considering the shortest paths. 
 The second one is ensured because lines 5 to 10 make sure of the connectivity in the case of at least one route reflector in $X$. Where the lines 11 and 12 take care of the case where no route reflector lies in $X$.
 
-An example of the algorithm can be found in Figure \ref{fig:hotbgp}. The route reflectors are V and W with respectively \{E, D, C, B, W\} and \{F, B, H, V\} as their clients. The Border routers are E, A and C. There are no static routes and the flow is (B, E).
+An example of the application of the algorithm can be found in Figure \ref{fig:hotbgp}. The route reflectors are V and W with respectively \{E, D, C, W\} and \{F, B, H, V\} as their clients. The Border routers are E, A and C. There are no static routes and the flow is (B, E).
 After the BGP simulation, the forwarding graph is $B \rightarrow C \rightarrow V \rightarrow E$.
 Notice that the B packets leave the network at E and not at A which is B's selected next-hop. This is due to B's shortest path to A ($B \rightarrow C \rightarrow F \rightarrow W \rightarrow A$) which traverses C whose next-hop is E, rerouting B's origin forwarding plan to leave the network at E.
 
 
 Initially, lines 2-5 gives $\mathcal{H} = {(E,V), (V,W), (W,A)}$ to ensure the connectivity between the border routers and the route reflectors (represented in  Figure \ref{fig:hotbgp}(iia)).
 Then the Figure \ref{fig:hotbgp}(iib) represents the union of the added hot edges from line 6 to 10. It ensures that every edges that could make the IGP cost change is marked as hot.
-The shortest path from B towards its selected next-hop is added in line 6 to ensure not change in IGP cost towards A. This adds ${(B,C), (C,F), (F,W), (W,A)}$ to the set of hot edges.
+The shortest path from B towards its selected next-hop is added in line 6 to ensure unchanged in IGP costs towards A. This adds ${(B,C), (C,F), (F,W), (W,A)}$ to the set of hot edges.
 There is no static route, so the seventh line doesn't change $\mathcal{H}$.
 In line 8, we have that C (and E) is added to $D_{\text{NH}}$ as  (B, C) lies on the forwarding graph and both nodes have different next-hop.
 Lines 9 to 10 marks hot the edges along the shortest path of C towards E, adding ${(C,V), (V,E)}$ to the set of hot edges.
@@ -196,23 +214,23 @@ The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(ii
 \begin{figure*}[t]
 	\centering
     \includegraphics[trim=4cm 0cm 0 0,clip, angle=90,width=0.95\textwidth]{figures/HotBgp.pdf}
-	\caption{Computation of hot edges in a BGP capable network configuration.  The flow is $(B,d)$ with d the external BGP destination, LP represents the local preference of the announcements towards d. $B_R = {E,A,C}$, $R_R = {V,W}$ represented in purple, the selected next-hop is represented in green at each node. Hot edges are highlighted in red.}\label{fig:hotbgp}
+	\caption{Computation of hot edges in a BGP capable network configuration.  The flow is $(B,d)$ with d the external BGP destination, LP represents the local preference of the announcements towards d. $B_R = \{E,A,C\}$, $R_R = \{V,W\}$ represented in purple, the selected next-hop is represented in green at each node. Hot edges are highlighted in red.}\label{fig:hotbgp}
 \end{figure*}
 
 \begin{algorithm}[t]
   \floatname{algorithm}{Algorithm}
   \caption{Hot edges for BGP}\label{alg.hotbgp}
   \begin{algorithmic}[1]
-    \Procedure{HotBGP}{u, d, $E_{fwd}$, $l$}
+    \Procedure{HotBGP}{u, d, $E_\textnormal{fwd}$, $l$}
 
     \State $X \leftarrow$ nodes reachable from $u$ under $l$ 
 		\State $B_{Rl} \leftarrow \textnormal{TOP3}(B_R,X)$ \Comment{subset of $B_R$ under consideration of $l$}  
 		\State $R_{Rl} \leftarrow R_R \cap X$  \Comment{subset of $R_R$ under consideration of $l$}  
 		\State $\mathcal{H} \leftarrow \textnormal{AllSP}_l(R_{Rl}, B_{Rl}, l)$ \Comment{ ensure (i) connectivity}
 		\State $\mathcal{H} \leftarrow \mathcal{H} \cup \textnormal{SP}_l(u, \text{NH}_d(u), l)$ \Comment{initial shortest path to next-hop}
-    \State $\mathcal{S} \leftarrow \{ y ~ | ~ (x, y) \in Static_d ~ \cap ~ E_{fwd} \}$ \Comment{static route}
+    \State $\mathcal{S} \leftarrow \{ y ~ | ~ (x, y) \in Static_d ~ \cap ~ E_\textnormal{fwd} \}$ \Comment{static route}
 
-		\State $\mathcal{D}_{\text{NH}} \leftarrow \{ y ~ | ~ (x, y) \in E_{fwd} \wedge \text{NH}_d(x) \neq \text{NH}_d(y) \}$ \Comment{divergent next-hop}
+		\State $\mathcal{D}_{\text{NH}} \leftarrow \{ y ~ | ~ (x, y) \in E_\textnormal{fwd} \wedge \text{NH}_d(x) \neq \text{NH}_d(y) \}$ \Comment{divergent next-hop}
 
 		\For{each $ x \in \mathcal{D}_{\text{NH}} \cup \mathcal{S}$}
 		\State $\mathcal{H} \leftarrow \mathcal{H} ~ \cup ~ \textnormal{SP}_l(x, \text{NH}_d(x), l)$ \Comment{ensure (ii) IGP costs unchanged}
@@ -230,7 +248,6 @@ The final set is the union of the represented sets of Figure \ref{fig:hotbgp}(ii
 \end{algorithm}
 
 
-
 \subsection{Exploration}\label{sec:explo}
 The exploration of the failure space is done by only exploring possible failures of hot edges. 
 To explore the failure space, NetDice considers 3 possible states for an edge during the exploration process : 
@@ -242,8 +259,9 @@ To explore the failure space, NetDice considers 3 possible states for an edge du
 
 Those states are only considered during the exploration process.
 In terms of forwarding graph computation, within a certain scenario, down edges are not considered usable whereas up and undefined are considered usable. 
-It is assumed that a \textit{check} function returning, given a property and forwarding graphs, if a property holds in every forwarding graph is implemented.
+It is assumed that a \textit{check} function returning, given a property and forwarding graphs, if a property holds in every forwarding graph is implemented for each property.
 In practice, it is implemented using variants of DFS depending on the property to check. 
+Appendix \ref{app:check} presents an implementation of this \textit{check} function for the waypoint property. 
 
 The exploration procedure can be described as follows : 
 \begin{enumerate}
@@ -485,5 +503,6 @@ Figure \ref{fig:netdiceTests} right represents the summary of the test.
 
 \subsection{Conclusion}
 
+\todo[inline]{relire tout et faire la conclu}
 
 

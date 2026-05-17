@@ -173,15 +173,60 @@ Bruno \textsc{Quoitin}\\[3mm]
 \todo[inline]{Introduce each article and the choice of analysing them (towards green networking and research ?)} 
 
 \include{sections/NetDice}
-%
+
 \include{sections/NetPowProp}
-%
-% \include{sections/FantJoul}
+
+\include{sections/FantJoul}
 
 
 % ==============================================
 % here lies the appendix
 \appendix
+
+
+\subsection{Check implementation of waypoint property}\label{app:check}
+
+Alg. \ref{alg:checkWaypoint} represent a possible implementation of the \textit{check} function for the waypoint property. 
+It is not the actual implementation used by NetDice but aims at understanding the implementation of the check function. 
+This idea is that, knowing the forwarding graph leads to the destination (after Lin. 4-5), if it encounters the waypoint $w$ then it lies on the path towards the destination $d$ and the exploration is stopped.
+However, if $d$ is encountered without previously encountering $w$, then there exists a path where the flow $(u,d)$ does not pass through $w$, returning false. 
+If all path lead to $w$, then the result will be true, as the conditions of Line 9 and 11 will never be satisfied.
+
+\begin{algorithm}[t]
+  \floatname{algorithm}{Algorithm}
+  \caption{Check function for the waypoint property (See Table \ref{tab:props})}\label{alg:checkWaypoint}
+  \begin{algorithmic}[1]
+    \Procedure{WaypointCheck}{$(V_\textnormal{fwd}, E_\textnormal{fwd}), w, (u,d)$}
+
+		\State \textbf{return} WaypointRec($(V_\textnormal{fwd}, E_\textnormal{fwd}), u w, d$)
+    \EndProcedure
+
+	\Procedure{waypointRec}{$(V_\textnormal{fwd}, E_\textnormal{fwd}), curr, w, dest$}
+
+		\If{$(V_\textnormal{fwd}, E_\textnormal{fwd}) ~ = ~ \emptyset$ or loop in $(V_\textnormal{fwd}, E_\textnormal{fwd})$}
+			\State \textbf{return} false
+		\EndIf
+		\Comment{below $d$ is reachable from $u$}
+
+		\For{each $n$ in $curr$.next} \Comment{next in $(V_\textnormal{fwd}, E_\textnormal{fwd})$}
+
+		\If{$n$ = $w$}
+			\State pass
+		\EndIf
+		\If{$n$ = $dest$}
+			\State \textbf{return} false
+		\EndIf
+
+		\If{not RecWaypoint($(V_\textnormal{fwd}, E_\textnormal{fwd}), n, w, dest$)}
+			\State \textbf{return} false
+		\EndIf
+    \EndFor
+	\State \textbf{return} true
+    \EndProcedure
+
+  \end{algorithmic}
+\end{algorithm}
+
 
 \subsection{Attempt at reproducing paper's result}\label{app:attempt}
 
@@ -260,7 +305,7 @@ The main difference is the number of switches making the number of transceivers 
 		\end{tabular}
 \end{table}
 
-% my attempt at it
+
 
 {
 \hfuzz 50pt 
