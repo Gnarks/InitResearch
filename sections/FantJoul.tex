@@ -429,6 +429,23 @@ The resulting errors matter little for the same reason: traffic-induced power is
         \bottomrule
     \end{tabular}
 \end{table*}
+
+\begin{table*}[t]
+
+	\caption{Energy savings related to using more efficient (defined by 80 plus standard \cite{80plus}) PSU or using only one rather than two from the article \cite{FantasticJoul}.}\label{tab:psu}
+    \centering
+    \begin{tabular}{lccccc}
+        \toprule
+        Power-saving measure $\backslash$ 80 Plus standard & Bronze & Silver & Gold & Platinum & Titanium \\
+        \midrule
+        \S~9.3.2: More efficient PSUs & 2\% (482 W)  & 3\% (737 W)  & 4\% (958 W)  & 5\% (1156 W) & 7\% (1563 W) \\
+        \S~9.3.4: Only one PSU        & 4\% (1002 W) & --           & --           & --           & --           \\
+        \S~9.3.5: Both                & 5\% (1240 W) & 6\% (1392 W) & 7\% (1528 W) & 7\% (1660 W) & 9\% (1974 W) \\
+        \bottomrule
+    \end{tabular}
+\end{table*}
+
+
 From the resulting dataset multiple insights on router power consumption are derived. 
 
 \textbf{Turning an interface DOWN is not turning it OFF}.
@@ -465,20 +482,6 @@ Their work, tho exploratory, presents interesting savings and foster the idea of
 Their experiments and the related power savings figures in Table \ref{tab:psu}.  
 
 
-\begin{table*}[ht]
-
-	\caption{Energy savings related to using more efficient (defined by 80 plus standard \cite{80plus}) PSU or using only one rather than two from the article \cite{FantasticJoul}.}\label{tab:psu}
-    \centering
-    \begin{tabular}{lccccc}
-        \toprule
-        Power-saving measure $\backslash$ 80 Plus standard & Bronze & Silver & Gold & Platinum & Titanium \\
-        \midrule
-        \S~9.3.2: More efficient PSUs & 2\% (482 W)  & 3\% (737 W)  & 4\% (958 W)  & 5\% (1156 W) & 7\% (1563 W) \\
-        \S~9.3.4: Only one PSU        & 4\% (1002 W) & --           & --           & --           & --           \\
-        \S~9.3.5: Both                & 5\% (1240 W) & 6\% (1392 W) & 7\% (1528 W) & 7\% (1660 W) & 9\% (1974 W) \\
-        \bottomrule
-    \end{tabular}
-\end{table*}
 
 \subsection{Towards improving Power consumption}\label{sec:improving} 
 The main contribution of the article, adding transceivers in the prior proposed power model\cite{35}, highlights an important power saving solution.
