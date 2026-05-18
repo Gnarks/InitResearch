@@ -14,3 +14,4 @@
 {"rule":"REP_PASSIVE_VOICE","sentence":"^\\QFinally, the results of NetDice's usage on synthetic configurations and nation-level ISP are presented (Section \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q).\\E$"}
 {"rule":"REP_PASSIVE_VOICE","sentence":"^\\QThen the probability model and computation is discussed in Section \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q and Section \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q presents the final implementation.\\E$"}
 {"rule":"ENGLISH_WORD_REPEAT_RULE","sentence":"^\\Qeach \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q in \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q.next next in \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q,NH\\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q ensure (ii) IGP costs unchanged\\E$"}
+{"rule":"A_COLLECTIVE_OF_NN","sentence":"^\\QSuch properties typically aim at representing SLAs and can either be expressed with single-flow or multiple-flow considering a flow to be a pair of source and destination IP addresses.\\E$"}
