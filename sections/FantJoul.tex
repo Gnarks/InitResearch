@@ -3,7 +3,7 @@
 \definecolor{linegreen}{RGB}{0, 199, 129}
 \definecolor{textdark}{RGB}{44, 62, 80}
 
-\section{Fantastic Joules and Where to Find Them}
+\section{Fantastic Joules and Where to Find Them} \label{sec:FantJoul}
 
 \subsection{Introduction} 
 The Internet was estimated, in 2022, to account for 1\% to 1.5\% of the global electricity consumption \cite{NetPerc}. 
@@ -478,42 +478,39 @@ Thus, the saving in smaller ISP composed mainly of external links is even more r
 \textbf{PSU (in)efficiency and scaling}
 In addition to collecting the dataset, due to the PSU unreliability, the authors explored and experimented with PSU.   
 Without detailing their preliminary work, they found that scaling properly and having efficient PSU could lead to considerable savings.    
-Their work, tho exploratory, presents interesting savings and foster the idea of increasing PSU conversion efficiency and using reducing their number.
-Their experiments and the related power savings figures in Table \ref{tab:psu}.  
+Their work, though exploratory, presents interesting savings and fosters the idea of increasing PSU conversion efficiency and reducing their number.
+Their experiments and the related power savings are detailed in Table \ref{tab:psu}.  
 
 
 
 \subsection{Towards improving Power consumption}\label{sec:improving} 
 The main contribution of the article, adding transceivers in the prior proposed power model\cite{35}, highlights an important power saving solution.
-Particularly optical transceivers, as observed (Sec. \ref{sec:comparison}), tend to consume most (if not all) the power as soon as they are plugged in.  
+Particularly optical transceivers, as observed (Sec. \ref{sec:comparison}), tend to consume most (if not all) of the power as soon as they are plugged into.  
 This is due to the fact that : 
 \begin{itemize}
 	\item [1)] Turning of the port they are plugged in does not power them off.  
 	\item [2)] Their power consumption is not (or little) influenced by traffic.
 \end{itemize}
-This makes the idea of link sleeping yields less power savings than what could have been anticipated.
+This makes the idea of link sleeping yield less power savings than what could have been anticipated.
 In addition, it seems that this issue might come from routers operating systems, meaning that the issue could be solved with relative ease.
 
-The second energy-saving idea explored consists of using more efficient power supply units or reducing their number to one. 
-Since PSUs are often doubled to ensure availability by redundancy.  
-This could be solved by using a technique referred as "hot stand-by", a configuration where only one PSU is used to supply the router and others remain in online for redundancy.   
+The second energy-saving idea explored consists of using more efficient power supply units or reducing their number to one, since PSUs are often doubled to ensure availability by redundancy.  
+This could be solved by using a technique referred to as "hot stand-by", a configuration where only one PSU is used to supply the router and others remain online for redundancy.   
 This could lead to better efficiency and reduced power consumption.
-However, the potential side effects have yet to be studied and could, for thermal reasons for example, result to an increase in wear and tear.  
+However, the potential side effects have yet to be studied and could, \textit{e.g.} for thermal reasons, result in an increase in wear and tear.  
 
 \subsection{Conclusion}
 The article's key takeaway is the established dataset and the valuable insights it gives on router power consumption.
-To constitute this dataset, router datasheets power data, Power Supply units, external measurements, and power models are used.  
+To constitute this dataset, power data from  router datasheets, Power Supply units, external measurements, and power models are used.  
 
 The datasheet collection suggests that their specifications are, as expected, overestimations, yet untrustworthy ones.   
 PSUs measurements are often inaccurate but precise, meaning they have an offset to the real power consumption but follow its overall form. 
 Though, once again they present unreliability issues just as datasheets can.
-On the other hand, the power model presented, despite a minor offset, gives tangible results in estimating the power consumption.
+On the other hand, the power model presented, despite a minor offset, gives tangible results in the estimation of power consumption.
 
 Examining the dataset leads to interesting results, such as the observation that optical transceiver power draw is not negligible and independent of traffic, as they consume power as soon as they are plugged in.
 This results in the re-evaluation of link-sleeping strategies, as turning interfaces down does not reduce as much power as expected.    
 
 Future research should focus on the impact of transceivers and reducing, perhaps solving, the power draw when plugged-in with interface down. 
 Moreover, fostering the impact of better-sized, more efficient and hot stand-by PSUs is also a promising energy-saving path.
-
-
 

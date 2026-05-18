@@ -73,53 +73,108 @@ g}
 
 \begin{document}
 
-{
-\let\clearpage\relax
+\title{}
+\author{}
 
-\hbadness 10000
-\begin{titlepage}
-\begin{minipage}[t]{0.45\textwidth}
-		\begin{flushleft}
-			{\Large University of Mons}\\[1ex]
-			{\Large Sciences Faculty}\\[1ex]
-			{\Large Computer Science Department}\\[2.5cm]
-		\end{flushleft}
-	\end{minipage}
-	\begin{minipage}[t]{0.45\textwidth}
-		\begin{flushright}
-			\includegraphics[height=1.5cm]{figures/logoumons.jpg}
-			\\
-			\vspace{1cm}
-			\includegraphics[height=1.5cm]{figures/logofs.jpg}
-		\end{flushright}
-	\end{minipage}
+%  Trick to make a homemade title page 
+\IEEEaftertitletext{
+  \vspace{-1.5cm} 
+  \noindent
+  \begin{minipage}[t]{0.45\textwidth}
+      \begin{flushleft}
+          {\Large University of Mons}\\[1ex]
+          {\Large Sciences Faculty}\\[1ex]
+          {\Large Computer Science Department}\\[2.5cm]
+      \end{flushleft}
+  \end{minipage}
+  \begin{minipage}[t]{0.45\textwidth}
+      \begin{flushright}
+          \includegraphics[height=1.5cm]{figures/logoumons.jpg} \\
+          \vspace{1cm}
+          \includegraphics[height=1.5cm]{figures/logofs.jpg}
+      \end{flushright}
+  \end{minipage}
 
+  \vspace{0.6cm}
+  {\large Academic Year 2025-2026}
 
-{\large Academic Year 2025-2026}
+  \centering
+  \rule{\linewidth}{0.3mm} \\[0.3cm]
+  { \LARGE \bfseries Research initiation \\[0.3cm]}
+  { \LARGE \bfseries Report\\[0.1cm]}
+  \rule{\linewidth}{0.3mm} \\[1.5cm]
 
-% Title
-\centering
-\rule{\linewidth}{0.3mm} \\[0.3cm]
-{ \LARGE \bfseries Research initiation \\[0.3cm]}
-{ \LARGE \bfseries Report\\[0.1cm]}
-\rule{\linewidth}{0.3mm} \\[1.5cm]
-
-% Author and supervisor
-\begin{minipage}[t]{0.45\textwidth}
-\begin{flushleft} \large
-\emph{Author :} \\
-Maxime \textsc{Bartha}\\
-\end{flushleft}
-\end{minipage}
-\begin{minipage}[t]{0.45\textwidth}
-\begin{flushright} \large
-\emph{Supervisor :}\\
-Bruno \textsc{Quoitin}\\[3mm]
-\end{flushright}
-\end{minipage}\\[2ex]
-\end{titlepage}
+  \vspace{-0.8cm}
+  \flushleft
+  \begin{minipage}[t]{0.45\textwidth}
+      \begin{flushleft} \large
+          \emph{Author :} \\
+          Maxime \textsc{Bartha}\\
+      \end{flushleft}
+  \end{minipage}%
+  \begin{minipage}[t]{0.45\textwidth}
+      \begin{flushright} \large
+          \emph{Supervisor :}\\
+          Bruno \textsc{Quoitin}\\[3mm]
+      \end{flushright}
+  \end{minipage}
+  
+  \vspace{1cm} 
 }
-\vspace{1.5cm}
+
+\maketitle
+
+
+
+
+% {
+% \let\clearpage\relax
+%
+% \hbadness 10000
+% \begin{titlepage}
+% \begin{minipage}[t]{0.45\textwidth}
+% 		\begin{flushleft}
+% 			{\Large University of Mons}\\[1ex]
+% 			{\Large Sciences Faculty}\\[1ex]
+% 			{\Large Computer Science Department}\\[2.5cm]
+% 		\end{flushleft}
+% 	\end{minipage}
+% 	\begin{minipage}[t]{0.45\textwidth}
+% 		\begin{flushright}
+% 			\includegraphics[height=1.5cm]{figures/logoumons.jpg}
+% 			\\
+% 			\vspace{1cm}
+% 			\includegraphics[height=1.5cm]{figures/logofs.jpg}
+% 		\end{flushright}
+% 	\end{minipage}
+%
+%
+% {\large Academic Year 2025-2026}
+%
+% % Title
+% \centering
+% \rule{\linewidth}{0.3mm} \\[0.3cm]
+% { \LARGE \bfseries Research initiation \\[0.3cm]}
+% { \LARGE \bfseries Report\\[0.1cm]}
+% \rule{\linewidth}{0.3mm} \\[1.5cm]
+%
+% % Author and supervisor
+% \begin{minipage}[t]{0.45\textwidth}
+% \begin{flushleft} \large
+% \emph{Author :} \\
+% Maxime \textsc{Bartha}\\
+% \end{flushleft}
+% \end{minipage}
+% \begin{minipage}[t]{0.45\textwidth}
+% \begin{flushright} \large
+% \emph{Supervisor :}\\
+% Bruno \textsc{Quoitin}\\[3mm]
+% \end{flushright}
+% \end{minipage}\\[2ex]
+% \end{titlepage}
+% }
+%
+% \vspace{1.5cm}
 
 
 % ================================= article style frontpage
@@ -170,7 +225,28 @@ Bruno \textsc{Quoitin}\\[3mm]
 % ================================= article style frontpage
 
 \section{Intro}\label{sec:intro} % (fold)
-\todo[inline]{Introduce each article and the choice of analysing them (towards green networking and research ?)} 
+As the report name suggests, this project, done under the supervision of Mr. Quoitin, has for objective to prepare me to the research domain.
+
+More specifically, in the field of networking which is my preferred topic in computer science, hence the choice of Mr. Quoitin as supervisor.  
+
+In the context of my master degree, I will participate in an internship at ETH Zurich, more precisely, in the Networked Systems research Group (NSG) led by Professor Laurent Vanbever.
+To prepare to this internship, it has been decided to examine and analyse three articles from my internship this research group, in the goal of finding a precise subject for my internship for my internship.
+Those three articles are distinct in topic and type.
+
+The first one \cite{steffen2020netdice}, is a technical paper explaining the implementation of NetDice, a probabilistic network configuration verifier.  
+It has been selected because formal verification is an interesting topic on which Mr. Vanbever has initially done his thesis \cite{LaurentThesis} on.   
+
+The second is a workshop paper questioning the impact of networking hardware in the power consumption of a Machine Learning (ML) cluster, arguing that it could and should be addressed.
+It has been selected for its topic on green networking and its difference in style and objective from the first article.
+
+The last, a conference paper presenting multiple ways to evaluate the power consumption of routers, and inferring their observations, propose future research paths to reduce it. 
+Its measurement-analysis-insight approach is the main reason for its selection.
+
+As they are separate works, they do not follow a unique "red-line" throughout the report.  
+However, their common theme is wired networks, of which routers and their configuration are the main examined topic.   
+Appendix \ref{app:routercompo} shows a schema of the inner components of a router, which is interesting to understand, especially for Section \ref{sec:NetPowProp} and \ref{sec:FantJoul}.
+
+Each paper has its dedicated section and are arranged by chronological order of analysis.  
 
 \include{sections/NetDice}
 
@@ -185,10 +261,26 @@ Bruno \textsc{Quoitin}\\[3mm]
 
 % ==============================================
 % here lies the appendix
+
+\newpage
 \appendix
 
 
+\subsection{Router schema}\label{app:routercompo}
+
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=0.9\columnwidth]{figures/RouterInsight.pdf}
+	\end{center}
+	\caption{Structure of a router/switch with the control plane, data plane and environmental units from \cite{35}. Packet processor performs lookups using the forwarding
+tables, which contains IP addresses (routers) or MAC addresses (switches). Transceivers are external units connecting into ports.}\label{fig:}
+\end{figure}
+
+
+{
+	\WarningFilter{hyperref}{Token}
 \subsection{Check implementation of waypoint property}\label{app:check}
+}
 
 Alg. \ref{alg:checkWaypoint} represent a possible implementation of the \textit{check} function for the waypoint property. 
 It is not the actual implementation used by NetDice but aims at understanding the implementation of the check function. 
@@ -196,7 +288,7 @@ This idea is that, knowing the forwarding graph leads to the destination (after 
 However, if $d$ is encountered without previously encountering $w$, then there exists a path where the flow $(u,d)$ does not pass through $w$, returning false. 
 If all path lead to $w$, then the result will be true, as the conditions of Line 9 and 11 will never be satisfied.
 
-\begin{algorithm}[t]
+\begin{algorithm}[h]
   \floatname{algorithm}{Algorithm}
   \caption{Check function for the waypoint property (See Table \ref{tab:props})}\label{alg:checkWaypoint}
   \begin{algorithmic}[1]
@@ -232,7 +324,7 @@ If all path lead to $w$, then the result will be true, as the conditions of Line
 \end{algorithm}
 
 
-\subsection{Attempt at reproducing paper's result}\label{app:attempt}
+\subsection{Attempt at reproducing the result of \cite{NetPowProp}}\label{app:attempt}
 
 \begin{figure}[t]
 	\centering

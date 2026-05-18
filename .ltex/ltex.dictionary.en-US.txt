@@ -47,3 +47,8 @@ WaypointCheck
 waypointRec
 mutli-flow
 initialises
+Quoitin
+analyse
+NetDice
+Vanbever
+Bartha
