@@ -317,7 +317,7 @@ Though a possible solution, it introduces latency in the system, as the circuit 
 
 \subsection{Conclusion}
 In this section, we focus on the impact of low proportionality of state-of-the-art networking hardware in the context of a machine learning cluster. 
-Modeling the use of one pod of this cluster (Section \ref{sec:PowMod}), was initially complicated due to the lack of transparency regarding topology interpolation.
+Modeling the use of one pod of this cluster (Section \ref{sec:PowMod}) was initially complicated due to the lack of transparency regarding topology interpolation.
 These complications inspired an attempt (in Appendix \ref{app:attempt}) to reproduce the article's results yielding higher total power consumption.
 However, contacting the authors solved the problem as they changed their GitHub\cite{githubeNetPowProp} repository's visibility to public.  
 
@@ -326,9 +326,9 @@ In the attempt, the network accounts for on average 14\%, leading to even higher
 The power efficiency found in the article, due to the poor power proportionality and high idling time, reaches an appallingly low 11\%.
 These results represent, in the context of million-watts power consumption of the cluster, a considerable amount of wasted energy.
 
-In the context of green networking, such amounts represent non-negligible insights and should be a concern to investigate further, especially in the case of machine learning clusters or data center due to their recent growth in number, large scale and low communication rate.  
+In the context of green networking, such amounts represent non-negligible insights and should be a concern to investigate further, especially in the case of machine learning clusters or data centers, due to their recent growth in number, large scale and low communication rate.  
 
-To investigate possible solutions, improvements regarding the power proportionality of network devices are explored from static and dynamic viewpoints by taking inspirations from the computing hardware strategies.
+To investigate possible solutions, improvements regarding the power proportionality of network devices are explored from static and dynamic viewpoints by taking inspiration from the computing hardware strategies.
 Even though such improvements would likely require ASIC and software changes, as demonstrated by the modeling, they are worth investigating further and should interest network hardware manufacturers.  
 
 

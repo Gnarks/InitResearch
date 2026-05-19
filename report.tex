@@ -225,21 +225,21 @@ g}
 % ================================= article style frontpage
 
 \section{Intro}\label{sec:intro} % (fold)
-As the report name suggests, this project, done under the supervision of Mr. Quoitin, has for objective to demystify and prepare me to the research domain.
+As the report title suggests, this project, done under the supervision of Mr. Quoitin, has the objective of demystifying the research domain and preparing me for.
 
-More specifically, in the field of networking which is my preferred topic in computer science, hence the choice of Mr. Quoitin as a supervisor.  
+More specifically, the research field in networking which is my preferred topic in computer science, hence the choice of Mr. Quoitin as a supervisor.  
 
-In the context of my master degree, I will participate in an internship at ETH Zurich, more precisely, in the Networked Systems research Group (NSG) led by Professor Laurent Vanbever.
-To prepare to this internship, it has been decided to examine and analyse three articles from this research group, in the goal of finding a precise subject for my internship.
+In the context of my master's degree, I will participate in an internship at ETH Zurich, more precisely, in the Networked Systems Research Group (NSG) led by Professor Laurent Vanbever.
+To prepare for this opportunity, it has been decided to examine and analyse three articles from this research group, with the goal of finding a precise subject for my work.
 Those three articles are distinct in topic and type.
 
 The first one \cite{steffen2020netdice}, is a technical paper explaining the implementation of NetDice, a probabilistic network configuration verifier.  
-It has been selected because formal verification is an interesting topic on which Mr. Vanbever has initially done his thesis \cite{LaurentThesis} on.   
+It has been selected because formal verification is an interesting topic on which Mr. Vanbever has initially done his thesis \cite{LaurentThesis}.   
 
 The second is a workshop paper questioning the impact of networking hardware in the power consumption of a Machine Learning (ML) cluster, arguing that it could and should be addressed.
 It has been selected for its topic on green networking and its difference in style and objective from the first article.
 
-The last, a conference paper presenting multiple ways to evaluate the power consumption of routers, and inferring their observations, propose future research paths to reduce it. 
+The last, a conference paper presenting multiple ways to evaluate the power consumption of routers, and inferring their observations, proposes future research paths to reduce it. 
 Its measurement-analysis-insight approach is the main reason for its selection.
 
 As they are separate works, they do not follow a unique "red-line" throughout the report.  
@@ -248,12 +248,12 @@ Appendix \ref{app:routercompo} shows a schema of the inner components of a route
 
 The two main topics of the articles are formal verification of network configurations and green networking.
 
-The former focuses of implementing a solution to verify if a network configuration, given a specific formal property, satisfies the property. 
+The former focuses on implementing a solution to verify if a network configuration, given a specific formal property, satisfies the property. 
 Its limitations are well-known and are mainly coming from the difficulty of correctly specifying the configuration or the property.
 
-The latter is the focus on making networking hardware more energy-efficient, because, as discussed in both the second and third article, is a growing interest amongst researchers, ISPs and large companies. 
+The latter is the focus on making networking hardware more energy-efficient, because, as discussed in both the second and third articles, it is a growing interest amongst researchers, ISPs and large companies. 
 
-To each paper is dedicated a section, and they are arranged by chronological order of analysis.  
+A section is dedicated to each paper, and these sections are arranged by chronological order of analysis.
 
 \include{sections/NetDice}
 
@@ -263,23 +263,24 @@ To each paper is dedicated a section, and they are arranged by chronological ord
 
 
 \section{Conclusion}
-To conclude, each article is analysed to extract, from their limitations, possible research topics.
+To conclude, each article is analysed to extract, from its limitations, possible research topics.
 
-Formal verification still lacks versatility and has observed by the latency induced by the Variable Elimination algorithm, introducing modular approaches tends to decrease performance.
+Formal verification still lacks versatility and as observed by the latency induced by the Variable Elimination algorithm, introducing modular approaches tends to decrease performance.
 However, the probabilistic approach, though incomplete, is a correct and often sufficient way to verify properties in network configurations.
-As suggested by recent interests \cite{LeveragingLLM, LLMNetConf}, leveraging LLM could be a possible, though imprecise \cite{LLMBench}, way of handling network configurations.
+As suggested by recent interests \cite{LeveragingLLM, LLMNetConf}, leveraging LLMs could be a possible, though imprecise \cite{LLMBench}, way of handling network configurations.
 In any case, due to the fact that LLMs are a recent technology, the exploration of their usage in this context is an interesting research opportunity.   
 
 
-The insights of the second article permits to grasp how important the green networking topic is, especially is the context of the rapid number growth of ML clusters.
-Noted that wired communication only accounts for an estimated third of the global Internet  power consumption \cite{NetPerc}, of which the remaining 2/3 is consumed by mobile, investigating mobile internet devices power efficiency is a promising topic.  
-Moreover, fostering the proposed solutions from the article could also lead to interesting energy-saving solutions.
+The insights of the second article permit us to grasp how important the green networking topic is, especially in the context of the rapid growth in the number of ML clusters.
+Given that wired communication only accounts for an estimated third of the global Internet power consumption \cite{NetPerc}, with the remaining 2/3 is consumed by mobile networks, investigating the power consumption of mobile internet devices is a promising topic.  
+Moreover, fostering the proposed solutions from the article could also lead to interesting energy-saving outcomes.
 
 
-The last article highlights the lack of understanding of a router power consumption and the difficulty of retrieving correct power measurements and estimations.
-This is indirectly linked to the objectives of the IETF GREEN \cite{IetfGreen}, a research group aiming at defining requirements and standards to define energy-efficiency metrics and optimisations.  
-The limitations of the article, for example, not considering pluggable line cards in the power model or the inexplicability of the negative $P_\textnormal{offset}$ can lead to improvements of the presented power model.
+The last article highlights the lack of understanding of  router power consumption and the difficulty of retrieving correct power measurements and estimations.
+This is indirectly linked to the objectives of the IETF GREEN \cite{IetfGreen}, a research group aiming to establish requirements and standards for energy-efficiency metrics and optimisations.  
+The limitations of the article, \textit{e.g.} not considering pluggable line cards in the power model or the inexplicability of the negative $P_\textnormal{offset}$, can lead to improvements of the presented power model.
 
+Finally, an interesting research path could be the application of formal verification to green networking, as leveraging power models to define energy-efficiency properties could enable reconfigurations to satisfy such properties, possibly at runtime as demonstrated for BGP \cite{chameleon}.
 
 % ==============================================
 % here lies the appendix
