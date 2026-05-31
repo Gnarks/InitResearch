@@ -508,3 +508,99 @@
 	       https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/612650/main.pdf
 	       },
 }
+@online{batfish,
+	title = {Batfish},
+	author = {},
+	year = 2022,
+	url = {https://batfish.org/},
+	note = {[Accessed 31-05-2026]},
+}
+@inproceedings{Minesweeper,
+	author = {Beckett, Ryan and Gupta, Aarti and Mahajan, Ratul and Walker,
+	          David},
+	title = {A General Approach to Network Configuration Verification},
+	year = {2017},
+	isbn = {9781450346535},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	url = {https://doi.org/10.1145/3098822.3098834},
+	doi = {10.1145/3098822.3098834},
+	abstract = {We present Minesweeper, a tool to verify that a network
+	            satisfies a wide range of intended properties such as
+	            reachability or isolation among nodes, waypointing, black holes,
+	            bounded path length, load-balancing, functional equivalence of
+	            two routers, and fault-tolerance. Minesweeper translates network
+	            configuration files into a logical formula that captures the
+	            stable states to which the network forwarding will converge as a
+	            result of interactions between routing protocols such as OSPF,
+	            BGP and static routes. It then combines the formula with
+	            constraints that describe the intended property. If the combined
+	            formula is satisfiable, there exists a stable state of the
+	            network in which the property does not hold. Otherwise, no stable
+	            state (if any) violates the property. We used Minesweeper to
+	            check four properties of 152 real networks from a large cloud
+	            provider. We found 120 violations, some of which are potentially
+	            serious security vulnerabilities. We also evaluated Minesweeper
+	            on synthetic benchmarks, and found that it can verify rich
+	            properties for networks with hundreds of routers in under five
+	            minutes. This performance is due to a suite of model-slicing and
+	            hoisting optimizations that we developed, which reduce runtime by
+	            over 460x for large networks.},
+	booktitle = {Proceedings of the Conference of the ACM Special Interest Group
+	             on Data Communication},
+	pages = {155–168},
+	numpages = {14},
+	keywords = {Network verification, Control plane analysis},
+	location = {Los Angeles, CA, USA},
+	series = {SIGCOMM '17},
+}
+@article{topologyZoo,
+	author = {Knight, Simon and Nguyen, Hung and Falkner, Nickolas and Bowden,
+	          Rhys and Roughan, Matthew},
+	year = {2011},
+	month = {11},
+	pages = {1765 - 1775},
+	title = {The Internet Topology Zoo},
+	volume = {29},
+	journal = {Selected Areas in Communications, IEEE Journal on},
+	doi = {10.1109/JSAC.2011.111002},
+}
+@inproceedings{tier1Topo,
+	author = {M\'{e}rindol, Pascal and Van den Schrieck, Virginie and Donnet,
+	          Benoit and Bonaventure, Olivier and Pansiot, Jean-Jacques},
+	title = {Quantifying ases multiconnectivity using multicast information},
+	year = {2009},
+	isbn = {9781605587714},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	url = {https://doi.org/10.1145/1644893.1644937},
+	doi = {10.1145/1644893.1644937},
+	abstract = {Redundant connectivity (or multiconnectivity) between adjacent
+	            autonomous systems (ASes) is important for interdomain traffic
+	            engineering and fast recovery in case of failures. However, the
+	            redundancy of ASes business relationship links has not been
+	            quantitatively studied, mainly due to the difficulty of obtaining
+	            relevant data. In this paper, we show that the mrinfo multicast
+	            monitoring tool can provide useful data about the Internet
+	            topology and such redundant links in particular. Our analysis
+	            relies on more than four years of daily queries to about ten
+	            thousand routers mapped into more than two hundred ASes. We
+	            demonstrate that peering links between ASes are frequently
+	            redundant. In particular, our analysis shows that more than half
+	            of the studied ASes pairs are connected through multiple physical
+	            links. We then refine our analysis by considering the different
+	            types of ASes and their business relationships. A particular
+	            result of our analysis is that at least 75\% of the peer-to-peer
+	            relationships between adjacent Tier-1 ASes are redundant, i.e.,
+	            the connections between these ASes involve several physical
+	            links. Our analysis is conservative, providing so a lower bound,
+	            as some links might not be seen by mrinfo due to ISPs filtering
+	            policies.},
+	booktitle = {Proceedings of the 9th ACM SIGCOMM Conference on Internet
+	             Measurement},
+	pages = {370–376},
+	numpages = {7},
+	keywords = {ases connectivity, mrinfo, multicast, network topology},
+	location = {Chicago, Illinois, USA},
+	series = {IMC '09},
+}

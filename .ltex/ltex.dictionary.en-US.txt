@@ -58,3 +58,8 @@ inexplicability
 Gauvain
 Devillez
 analysing
+Batfish
+SIGCOMM
+HotSpStatic
+ASes
+NetDice
