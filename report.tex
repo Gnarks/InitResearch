@@ -4,7 +4,7 @@
 \IEEEoverridecommandlockouts
 \ifCLASSOPTIONcompsoc
 \usepackage[caption=false,font=normalsize,labelfon
-t=sf,textfont=sf]{subfig}
+t=sf,textfont=sf]{subfig} % subfloat
 \else
 \usepackage[caption=false,font=footnotesize]{subfi
 g}
@@ -100,7 +100,7 @@ g}
 
   \centering
   \rule{\linewidth}{0.3mm} \\[0.3cm]
-  { \LARGE \bfseries Research initiation \\[0.3cm]}
+  { \LARGE \bfseries Initiation to Research \\[0.3cm]}
   { \LARGE \bfseries Report\\[0.1cm]}
   \rule{\linewidth}{0.3mm} \\[1.5cm]
 
@@ -115,7 +115,10 @@ g}
   \begin{minipage}[t]{0.45\textwidth}
       \begin{flushright} \large
           \emph{Supervisor :}\\
-          Bruno \textsc{Quoitin}\\[3mm]
+          Prof. Bruno \textsc{Quoitin}\\[3mm]
+          \emph{Reviewer :}\\
+		  Dr. Gauvain Devillez
+
       \end{flushright}
   \end{minipage}
   
@@ -124,7 +127,9 @@ g}
 
 \maketitle
 
-
+\thispagestyle{plain} 
+\pagestyle{plain}
+\pagenumbering{arabic}
 
 
 % {
@@ -224,36 +229,35 @@ g}
 % \newpage
 % ================================= article style frontpage
 
-\section{Intro}\label{sec:intro} % (fold)
-As the report title suggests, this project, done under the supervision of Mr. Quoitin, has the objective of demystifying the research domain and preparing me for.
+\section{Introduction}\label{sec:intro} % (fold)
+As the report title suggests, this project, done under the supervision of Prof. Quoitin, has the objective of demystifying the research domain.
 
-More specifically, the research field in networking which is my preferred topic in computer science, hence the choice of Mr. Quoitin as a supervisor.  
+More specifically, the research field in networking which is my preferred topic in computer science, hence the choice of Prof. Quoitin as a supervisor.  
 
 In the context of my master's degree, I will participate in an internship at ETH Zurich, more precisely, in the Networked Systems Research Group (NSG) led by Professor Laurent Vanbever.
 To prepare for this opportunity, it has been decided to examine and analyse three articles from this research group, with the goal of finding a precise subject for my work.
 Those three articles are distinct in topic and type.
 
-The first one \cite{steffen2020netdice}, is a technical paper explaining the implementation of NetDice, a probabilistic network configuration verifier.  
+The first \cite{steffen2020netdice}, is a technical paper explaining the implementation of NetDice, a probabilistic network configuration verifier.  
 It has been selected because formal verification is an interesting topic on which Mr. Vanbever has initially done his thesis \cite{LaurentThesis}.   
 
-The second is a workshop paper questioning the impact of networking hardware in the power consumption of a Machine Learning (ML) cluster, arguing that it could and should be addressed.
+The second \cite{NetPowProp} is a workshop paper questioning the impact of networking hardware in the power consumption of a Machine Learning (ML) cluster, arguing that it could and should be addressed.
 It has been selected for its topic on green networking and its difference in style and objective from the first article.
 
-The last, a conference paper presenting multiple ways to evaluate the power consumption of routers, and inferring their observations, proposes future research paths to reduce it. 
+The last \cite{FantasticJoul} is a conference paper presenting multiple ways to evaluate the power consumption of routers, inferring their observations they propose future research paths to reduce it. 
 Its measurement-analysis-insight approach is the main reason for its selection.
 
-As they are separate works, they do not follow a unique "red-line" throughout the report.  
-However, their common theme is wired networks, of which routers and their configuration are the main examined topic.   
-Appendix \ref{app:routercompo} shows a schema of the inner components of a router, which is interesting to understand, especially for Section \ref{sec:NetPowProp} and \ref{sec:FantJoul}.
+As they are separate works, they do not follow a unique flow throughout the report.  
+However, they all focus on wired networks with different approaches and topics.      
 
-The two main topics of the articles are formal verification of network configurations and green networking.
+Section \ref{sec:NetDice} presents the first article diving in the topic of formal verification of network configurations.
+This topic focuses on implementing a solution to verify if a network configuration, given a specific formal property, satisfies the property. 
 
-The former focuses on implementing a solution to verify if a network configuration, given a specific formal property, satisfies the property. 
-Its limitations are well-known and are mainly coming from the difficulty of correctly specifying the configuration or the property.
+Section \ref{sec:NetPowProp} and \ref{sec:FantJoul} present the second and third articles exploring Green Networking with different approaches.   
+The focus of green networking is to make networking hardware more energy-efficient, because it is a growing interest amongst researchers, ISPs and large companies. 
 
-The latter is the focus on making networking hardware more energy-efficient, because, as discussed in both the second and third articles, it is a growing interest amongst researchers, ISPs and large companies. 
-
-A section is dedicated to each paper, and these sections are arranged by chronological order of analysis.
+This report aims to introduce the work of the NSG and derive potential research interest or questions for my future traineeship.   
+It is mainly intended for individuals introduced to networks having an interest in formal verification or state-of-the-art estimation of power consumption of networks.     
 
 \include{sections/NetDice}
 

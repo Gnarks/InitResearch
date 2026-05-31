@@ -55,3 +55,6 @@ Bartha
 analysed
 optimisations
 inexplicability
+Gauvain
+Devillez
+analysing

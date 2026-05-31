@@ -1,4 +1,3 @@
-
 \section{Probabilistic Verification of Network Configuration}\label{sec:NetDice}
 
 \subsection{Introduction}
@@ -31,7 +30,7 @@ Ensuring the correctness of network configurations for specific properties (\tex
 This problem, due to the scale of the deployed networks in such facilities and complex interdependencies between routing protocols, goes beyond the capabilities of current network analysers, as they would have to determine all scenarios for which the property is violated.  
 Furthermore, enforcing a property at all times is often not necessary, as the concern is rather on the probability or the fraction of time of that property to holds.
 These properties typically emerge from Service Level Agreements (SLAs), defined with respect to a certain metric and holding for a certain fraction of the time.
-For example, an ISP could guarantee internet reachability for $99.9999\%$ (five 9's) of the time.
+For example, an ISP could guarantee internet reachability for $99.999\%$ (five 9's) of the time.
 
 To address this problem, we explore the reasoning and the implementation behind NetDice \cite{steffen2020netdice}, a probabilistic verification tool for network configuration. 
 It supports modern protocols such as BGP, OSPF and ECMP as well as static routes.
