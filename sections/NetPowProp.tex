@@ -397,9 +397,7 @@ Though a possible solution, it introduces latency in the system, as the circuit 
 
 \subsection{Conclusion}
 In this section, we focus on the impact of low proportionality of state-of-the-art networking hardware in the context of a machine learning cluster. 
-Modeling the use of one pod of this cluster (Section \ref{sec:PowMod}) was initially complicated due to the lack of transparency regarding topology interpolation.
-These complications inspired an attempt (in Appendix \ref{app:attempt}) to reproduce the article's results yielding higher total power consumption.
-However, contacting the authors solved the problem as they changed their GitHub\cite{githubeNetPowProp} repository's visibility to public.  
+Modeling the use of one pod of this cluster (Section \ref{sec:PowMod}) was initially complicated due to the lack of transparency regarding topology interpolation, but was solved by the release of their GitHub repository \cite{githubeNetPowProp}.
 
 The authors find that the network accounts for on average 12\% of the total cluster power consumption and argue that improving network power proportionality could lead to power-savings ranging from 5\% up to 9\%.
 In the attempt, the network accounts for on average 14\%, leading to even higher power savings.
