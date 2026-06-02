@@ -286,6 +286,13 @@ The limitations of the article, \textit{e.g.} not considering pluggable line car
 
 Finally, an interesting research path could be the application of formal verification to green networking, as leveraging power models to define energy-efficiency properties could enable reconfigurations to satisfy such properties, possibly at runtime as demonstrated for BGP \cite{chameleon}.
 
+
+{
+\hfuzz 50pt 
+\hbadness 10000 
+\printbibliography
+}
+
 % ==============================================
 % here lies the appendix
 
@@ -389,6 +396,20 @@ If all path lead to $w$, then the result will be true, as the conditions of Line
 	\caption{Calculated attempt at power footprint of the examined ML cluster.}\label{fig:ownPowFootprint}
 \end{figure}
 
+\begin{table}[t]
+	\caption{Assumed number of network resources depending on the bandwidth.}\label{tab:PowAttempt}
+	\centering
+		\begin{tabular}[c]{cccccc}
+			\toprule
+			\textbf{Bandwidth(Gbps)} & \textbf{100} & \textbf{200} & \textbf{400} & \textbf{800} & \textbf{1600} \\
+			\hline
+			\textbf{switches} & 239 & 239 & 571 & 1339 & 2876 \\ 
+			\hline
+			\textbf{transceivers} & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
+			\bottomrule
+		\end{tabular}
+\end{table}
+
 
 An attempt at reproducing the article's results on numbers of networks resources is presented in Table \ref{tab:PowAttempt}. 
 In this attempt, the same formulas \cite{Demy} are used in addition to a visualiser \cite{fatTreeVis}. A clear problem of using those formulas is that it assumes an even distribution of upstream and downstream ports which isn't the case for the considered switches with 60 upstream and 128 downstream ports. The number of ports in this attempt is considered to be 188.  
@@ -413,27 +434,5 @@ The resulting power footprint of the computed attempt is presented in Figure \re
 
 In comparison, the attempt at reproducing the article's results is presented in Figure \ref{fig:PowFootprint}. 
 The main difference is the number of switches making the number of transceivers explode in the attempt.
-
-\begin{table}[t]
-	\caption{Assumed number of network resources depending on the bandwidth.}\label{tab:PowAttempt}
-	\centering
-		\begin{tabular}[c]{cccccc}
-			\toprule
-			\textbf{Bandwidth(Gbps)} & \textbf{100} & \textbf{200} & \textbf{400} & \textbf{800} & \textbf{1600} \\
-			\hline
-			\textbf{switches} & 239 & 239 & 571 & 1339 & 2876 \\ 
-			\hline
-			\textbf{transceivers} & 29914 & 29914  & 84921 & 202425 & 443662 \\ 
-			\bottomrule
-		\end{tabular}
-\end{table}
-
-
-
-{
-\hfuzz 50pt 
-\hbadness 10000 
-\printbibliography
-}
 
 \end{document}

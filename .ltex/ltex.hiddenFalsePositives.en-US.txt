@@ -16,3 +16,4 @@
 {"rule":"ENGLISH_WORD_REPEAT_RULE","sentence":"^\\Qeach \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q in \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q.next next in \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q,NH\\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q ensure (ii) IGP costs unchanged\\E$"}
 {"rule":"A_COLLECTIVE_OF_NN","sentence":"^\\QSuch properties typically aim at representing SLAs and can either be expressed with single-flow or multiple-flow considering a flow to be a pair of source and destination IP addresses.\\E$"}
 {"rule":"WHITESPACE_RULE","sentence":"^\\QResearch initiation Report\\E$"}
+{"rule":"UPPERCASE_SENTENCE_START","sentence":"^\\Qis the time proportion of the communication phase in an iteration.\\E$"}
