@@ -318,11 +318,17 @@ tables, which contains IP addresses (routers) or MAC addresses (switches). Trans
 
 Alg. \ref{alg:checkWaypoint} represent a possible implementation of the \textit{check} function for the waypoint property. 
 It is not the actual implementation used by NetDice but aims at understanding the implementation of the check function. 
-This idea is that, knowing the forwarding graph leads to the destination (after Lin. 4-5), if it encounters the waypoint $w$ then it lies on the path towards the destination $d$ and the exploration is stopped.
+This idea is that, knowing the forwarding graph leading to the destination (after Lin. 4-5), if it encounters the waypoint $w$ then it lies on the path towards the destination $d$ and the exploration is stopped.
 However, if $d$ is encountered without previously encountering $w$, then there exists a path where the flow $(u,d)$ does not pass through $w$, returning false. 
-If all path lead to $w$, then the result will be true, as the conditions of Line 9 and 11 will never be satisfied.
+If all paths lead to $w$, then the result will be true, as the conditions of Line 9 and 11 will never be satisfied.
 
-\begin{algorithm}[h]
+
+
+\algnewcommand\algorithmicnot{\textbf{not}}
+\algdef{SE}[IF]{IfNot}{EndIf}[1]{\algorithmicif\ \algorithmicnot\ #1\ \algorithmicthen}{\algorithmicend\ \algorithmicif}%
+
+
+\begin{algorithm}[ht]
   \floatname{algorithm}{Algorithm}
   \caption{Check function for the waypoint property (See Table \ref{tab:props})}\label{alg:checkWaypoint}
   \begin{algorithmic}[1]
@@ -341,14 +347,14 @@ If all path lead to $w$, then the result will be true, as the conditions of Line
 		\For{each $n$ in $curr$.next} \Comment{next in $(V_\textnormal{fwd}, E_\textnormal{fwd})$}
 
 		\If{$n$ = $w$}
-			\State pass
+			\State pass to next $n$
 		\EndIf
 		\If{$n$ = $dest$}
 			\State \textbf{return} false
 		\EndIf
 
-		\If{not RecWaypoint($(V_\textnormal{fwd}, E_\textnormal{fwd}), n, w, dest$)}
-			\State \textbf{return} false
+		\If{\hspace{-4pt}\textbf{not}\textsc{waypointRec}($(V_\textnormal{fwd}, E_\textnormal{fwd}), n, w, dest$)}
+		\State \textbf{return} false
 		\EndIf
     \EndFor
 	\State \textbf{return} true
